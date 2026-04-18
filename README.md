@@ -14,10 +14,8 @@
 
 - 🎯 **Phoneme-level precision** — operates at ~10 ms frame resolution, the finest granularity among neural forced aligners.
 - 🔁 **Fully differentiable** — a Soft Dynamic Programming decoder enables gradient flow through the entire alignment pipeline.
-- 🌍 **Zero-shot multilingual** — trained on English, generalizes to Dutch, German, and Hebrew without any additional training.
+- 🌍 **Zero-shot multilingual** — trained on English, generalizes to unseen languages at inference (tested on Dutch, German, and Hebrew can be others too) **without any additional training**.
 - 📝 **Word-level generalization** — word boundaries derived from phoneme predictions at test time, competitive with word-level neural aligners.
-- ⚡ **Outperforms MFA** — surpasses the Montreal Forced Aligner on TIMIT and Buckeye at 25/50/100 ms tolerances.
-
 ---
 
 ## How It Works
@@ -147,7 +145,7 @@ WANDB_MODE=disabled python main.py
 | `epochs` | 200 | Total training epochs |
 | `batch_size` | 8 | Per-GPU batch size |
 | `lr` | 3e-4 | Learning rate (AdamW) |
-| `devices` | [7] | GPU device index(es) — **update this** |
+| `devices` | [7] |
 | `num_classes` | 39 | Phoneme set size (Lee-Hon 39) |
 | `z_dim` | 256 | CNN encoder output dimension |
 | `z_proj` | 64 | Projection head output dimension |
@@ -272,31 +270,6 @@ See [`LATENT_VISUALIZATION_README.md`](LATENT_VISUALIZATION_README.md) for detai
 
 ---
 
-## Results
-
-### Phoneme-level alignment (English)
-
-| Model | Dataset | P@10ms | P@25ms | P@50ms | P@100ms |
-|-------|---------|--------|--------|--------|---------|
-| MFA (HMM-GMM) | TIMIT | 38.6 | 72.3 | 81.1 | 84.6 |
-| **FDNFA (ours)** | **TIMIT** | **39.18** | **83.98** | **95.26** | **98.64** |
-| MFA (HMM-GMM) | Buckeye | **35.3** | 60.6 | 68.9 | 72.7 |
-| **FDNFA (ours)** | **Buckeye** | 29.44 | **68.69** | **88.5** | **96.60** |
-
-### Zero-shot multilingual phoneme alignment
-
-| Language | Model | P@25ms | P@50ms | P@100ms |
-|----------|-------|--------|--------|---------|
-| Dutch (IFA) | MFA | 21.8 | 33.9 | 51.0 |
-| Dutch (IFA) | **FDNFA** | **38.82** | **55.48** | **73.66** |
-| German (PHONDAT) | MFA | 45.8 | 66.8 | 79.2 |
-| German (PHONDAT) | **FDNFA** | **47.57** | **69.58** | **83.32** |
-| Hebrew | FDNFA only | 27.06 | 41.57 | 59.02 |
-
-*Hebrew: MFA unavailable (no dictionary/acoustic model for this language).*
-
----
-
 ## Project Structure
 
 ```
@@ -321,7 +294,7 @@ FDNFA/
 
 ## Architecture Documentation
 
-For a detailed technical description of every component — including the MNCE loss formulation, Soft-DP algorithm, and data pipeline — see [`GEMINI.md`](GEMINI.md).
+For a detailed technical description of every component — including the MNCE loss formulation, Soft-DP algorithm, and data pipeline — see paper mentioned above.
 
 ---
 
