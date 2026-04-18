@@ -1,0 +1,49 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# C extensions
+*.pyd
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# runs expriments ckpts
+runs/
+
+# Environment folders
+.env
+.venv
+env/
+venv/
+
+# Logs and debugging
+*.log
+*.out
+
+# PyTorch/TensorFlow/ML-specific
+wandb/
+checkpoints/
+*.ckpt
+*.pt
+*.pth
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Data
+*.csv
+*.tsv
+*.zip
+*.tar
+*.npy
+*.npz
+
+# Backup files
+*~ 
+*.bak
