@@ -2,7 +2,7 @@
 
 [![Paper](https://img.shields.io/badge/Paper-IEEE%202026-blue)](https://arxiv.org/) [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**FDNFA** is an end-to-end, fully differentiable neural system for **phoneme-level and word-level (and also multilingual) forced alignment** — given a speech waveform and a known phoneme sequence, it predicts precise phoneme boundary timestamps.
+**FDNFA** is an end-to-end, fully differentiable neural system for **phoneme-level and word-level (and also multilingual) forced alignment** — given a speech waveform and a known phoneme/words transcript sequence, it predicts precise phoneme boundary timestamps.
 
 > Rotem Rousso, Eyal Cohen, Joseph Keshet  
 > *"Fully Differentiable Neural Phoneme and Word Level Forced Alignment via Soft Dynamic Programming"*  
