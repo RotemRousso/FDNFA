@@ -20,7 +20,8 @@ import dutch_preprocess
 from utils import timit_to_leehon_map_MACRO, timit_leehon_39_phonemes, timit_61_phonemes
 
 # def main_predict(wav, ckpt, prominence,w_phi, language="english"):
-def main_predict(wav, ckpt, prominence,w_phi, language="dutch"):
+# def main_predict(wav, ckpt, prominence,w_phi, language="dutch"):
+def main_predict(wav, ckpt, prominence, w_phi, language="english", annotation="phn"):
     print(f"running inference on: {wav}")
     print(f"running inferece using ckpt: {ckpt}")
     print("\n\n", 90 * "-")
@@ -50,9 +51,10 @@ def main_predict(wav, ckpt, prominence,w_phi, language="dutch"):
     
     base_dir = os.path.dirname(wav)
     base_name = os.path.basename(wav).split('.')[0]
-    search_pattern = os.path.join(base_dir, f"{base_name}*.phn")
+    # search_pattern = os.path.join(base_dir, f"{base_name}*.phn")
     # search_pattern = os.path.join(base_dir, f"{base_name}*.wrd")
     # search_pattern = os.path.join(base_dir, f"{base_name}*.word")
+    search_pattern = os.path.join(base_dir, f"{base_name}*.{annotation}")
     matching_files = glob(search_pattern)
     if matching_files:
         phn_path = matching_files[0]
@@ -195,8 +197,12 @@ def main_predict(wav, ckpt, prominence,w_phi, language="dutch"):
     
     
     plt.show()
-    plt.savefig("/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/probs_DP_LOSS.png")
-    print("/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/probs_DP_LOSS.png")
+    out_dir = os.path.dirname(wav)
+    base_name = os.path.basename(wav).replace('.wav', '')
+    # plt.savefig("/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/probs_DP_LOSS.png")
+    # print("/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/probs_DP_LOSS.png")
+    plt.savefig(os.path.join(out_dir, f"{base_name}_probs.png"))
+    print(os.path.join(out_dir, f"{base_name}_probs.png"))
     # plt.savefig("/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/probs_try_phoneme_tmux9.png")
     # print("/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/probs_try_phoneme_tmux9.png")
     plt.close()
@@ -210,8 +216,10 @@ def main_predict(wav, ckpt, prominence,w_phi, language="dutch"):
     plt.yticks(ticks=range(39), labels=phoneme_labels)
     plt.title('Frame-wise Label Probability Map')
     plt.show()
-    plt.savefig("/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/logits_try_DP_loss.png")
-    print("/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/logits_try_DP_loss.png")
+    # plt.savefig("/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/logits_try_DP_loss.png")
+    # print("/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/logits_try_DP_loss.png")
+    plt.savefig(os.path.join(out_dir, f"{base_name}_logits.png"))
+    print(os.path.join(out_dir, f"{base_name}_logits.png"))
     plt.close()
     
     # run inference
@@ -298,8 +306,10 @@ def main_predict(wav, ckpt, prominence,w_phi, language="dutch"):
         plt.axvline(x=s, color='red', linestyle='--', linewidth=1, label='Truth boundary' if i == 0 else "")
         plt.text(s, y_top, phonemes[0][i], color='red', rotation=90, va='top', ha='center', fontsize=8)
     
-    plt.savefig(f'/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/preds_vs_truth_TIMIT_DP_LOSS_DETECT_PEAKS_w_ph_drivatie.png')
-    print(f'/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/preds_vs_truth_TIMIT_DP_LOSS_DETECT_PEAKS_w_ph_drivatie.png')
+    # plt.savefig(f'/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/preds_vs_truth_TIMIT_DP_LOSS_DETECT_PEAKS_w_ph_drivatie.png')
+    # print(f'/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/preds_vs_truth_TIMIT_DP_LOSS_DETECT_PEAKS_w_ph_drivatie.png')
+    plt.savefig(os.path.join(out_dir, f"{base_name}_boundaries.png"))
+    print(os.path.join(out_dir, f"{base_name}_boundaries.png"))
     plt.close()
     
     # plt.savefig(f'/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/preds_vs_truth_{filename[:-4]}_TIMIT_DP_LOSS_DETECT_PEAKS_w_ph_drivatie.png')
@@ -325,7 +335,22 @@ if __name__ == "__main__":
     parser.add_argument('--wav', help='path to wav file')
     parser.add_argument('--ckpt', help='path to checkpoint file')
     parser.add_argument('--prominence', type=float, default=None, help='prominence for peak detection (default: 0.05)')
+    # parser.add_argument('--language', type=str, default='english', choices=['english', 'dutch'], ...)
+    parser.add_argument('--mode', type=str, default='phoneme', choices=['phoneme', 'word'],
+                        help='Alignment granularity: "phoneme" = phoneme-level alignment (default). '
+                             '"word" = word-level alignment (zero-shot, no additional training).')
+    parser.add_argument('--lang', type=str, default='english', choices=['english', 'multilingual'],
+                        help='Language setting: "english" = trained English phoneme alignment (default). '
+                             '"multilingual" = any non-English language (zero-shot cross-lingual).')
+    parser.add_argument('--annotation', type=str, default='phn',
+                        help='Annotation file extension to search for (e.g. phn, wrd, word). Default: phn')
     args = parser.parse_args()
-    main_predict(args.wav, args.ckpt, args.prominence,w_phi=0.5, language="english")
-    # main_predict(args.wav, args.ckpt, args.prominence,w_phi=0.5, language="dutch")
+    # Derive internal language flag from user-facing --mode and --lang
+    # language="english" is the classic default (phoneme-level English, same as training)
+    # language="dutch" is the legacy internal name for the general non-default path:
+    #   word-level alignment (any language) OR any non-English language
+    # -- main_predict(args.wav, args.ckpt, args.prominence,w_phi=0.5, language="english")
+    # -- main_predict(args.wav, args.ckpt, args.prominence,w_phi=0.5, language="dutch")
+    language = "dutch" if (args.mode == "word" or args.lang == "multilingual") else "english"
+    main_predict(args.wav, args.ckpt, args.prominence, w_phi=0.5, language=language, annotation=args.annotation)
 

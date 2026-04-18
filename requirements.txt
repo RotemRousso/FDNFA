@@ -1,0 +1,44 @@
+# FDNFA — Fully Differentiable Neural Forced Aligner
+# Python >= 3.8 required
+# Install with: pip install -r requirements.txt
+# Or recreate the full environment: conda env create -f environment.yml
+
+# ── Core deep learning ──────────────────────────────────────────────────────
+torch==2.4.1
+torchaudio==2.4.1
+
+# ── Configuration & experiment tracking ────────────────────────────────────
+hydra-core==0.11.3
+omegaconf==1.4.1
+wandb==0.8.24
+
+# ── Optimizers ──────────────────────────────────────────────────────────────
+torch-optimizer==0.0.1a12     # Ranger optimizer
+
+# ── Audio processing ────────────────────────────────────────────────────────
+librosa==0.8.1
+soundfile==0.13.1
+torchaudio==2.4.1             # also listed above; kept for clarity
+
+# ── Numerical / scientific ──────────────────────────────────────────────────
+numpy==1.22.4
+scipy==1.7.3
+scikit-learn==1.3.2
+
+# ── Linguistics / phonetics ─────────────────────────────────────────────────
+panphon==0.21.0               # Articulatory feature distances (cross-lingual mapping)
+
+# ── Serialization ────────────────────────────────────────────────────────────
+dill==0.3.1.1                 # Serialization of peak detection params in checkpoints
+
+# ── Data utilities ───────────────────────────────────────────────────────────
+boltons==20.0.0               # iter_find_files (recursive WAV search)
+
+# ── Visualisation ────────────────────────────────────────────────────────────
+matplotlib==3.4.3
+
+# ── Profiling (optional — used during development) ───────────────────────────
+memory-profiler==0.61.0
+
+# ── General utilities ────────────────────────────────────────────────────────
+tqdm==4.62.3

@@ -3,14 +3,9 @@ import dill
 from argparse import Namespace
 import torch
 import torchaudio
-# from utils import (detect_peaks, max_min_norm, replicate_first_k_frames)
 from predict import main_predict
 from next_frame_classifier import NextFrameClassifier
-
 import dutch_preprocess
-
-
-# from predict import main_predict
 from tqdm import tqdm
 
 from dataloader import spectral_size
@@ -19,7 +14,8 @@ import numpy as np
 import os
 
 
-def test_predicts(wav_dir, ckpt, prominence, w_phi):
+# def test_predicts(wav_dir, ckpt, prominence, w_phi, language="english"):
+def test_predicts(wav_dir, ckpt, prominence, w_phi, language="english", annotation="phn"):
     total_sum = 0
     num_10 = 0
     num_15 = 0
@@ -41,8 +37,10 @@ def test_predicts(wav_dir, ckpt, prominence, w_phi):
         # if file_count<=100000000000000000:
         if file_count<=100000000000:
             wav_file_path = os.path.join(wav_dir,wav_file_name)
-            pred_bound, truth_bound = main_predict(wav_file_path,ckpt,prominence,w_phi, language="english")
+            # pred_bound, truth_bound = main_predict(wav_file_path,ckpt,prominence,w_phi, language="english")
             # pred_bound, truth_bound = main_predict(wav_file_path,ckpt,prominence,w_phi, language="dutch")
+            # pred_bound, truth_bound = main_predict(wav_file_path,ckpt,prominence,w_phi, language=language)
+            pred_bound, truth_bound = main_predict(wav_file_path,ckpt,prominence,w_phi, language=language, annotation=annotation)
             
             # ________OCT20 TRY_________________
             pred_bound = pred_bound[1:] 
@@ -113,7 +111,21 @@ if __name__ == "__main__":
     parser.add_argument('--wav', help='path to wav file')
     parser.add_argument('--ckpt', help='path to checkpoint file')
     parser.add_argument('--prominence', type=float, default=None, help='prominence for peak detection (default: 0.05)')
+    # parser.add_argument('--language', type=str, default='english', choices=['english', 'dutch'], ...)
+    parser.add_argument('--mode', type=str, default='phoneme', choices=['phoneme', 'word'],
+                        help='Alignment granularity: "phoneme" = phoneme-level alignment (default). '
+                             '"word" = word-level alignment (zero-shot, no additional training).')
+    parser.add_argument('--lang', type=str, default='english', choices=['english', 'multilingual'],
+                        help='Language setting: "english" = trained English phoneme alignment (default). '
+                             '"multilingual" = any non-English language (zero-shot cross-lingual).')
+    parser.add_argument('--annotation', type=str, default='phn',
+                        help='Annotation file extension to search for (e.g. phn, wrd, word). Default: phn')
     args = parser.parse_args()
+    # Derive internal language flag from user-facing --mode and --lang
+    # language="english" is the classic default (phoneme-level English, same as training)
+    # language="dutch" is the legacy internal name for the general non-default path:
+    #   word-level alignment (any language) OR any non-English language
+    language = "dutch" if (args.mode == "word" or args.lang == "multilingual") else "english"
     
     # preds,times_sec = main_predict(args.wav, args.ckpt, args.prominence)
     # just for check rn: 
@@ -259,7 +271,9 @@ if __name__ == "__main__":
     for idx in tqdm([12]):
         curr_ckpt = f"{ckpt}{idx}_best_model.pt"
         print(f"Testing: {curr_ckpt}")
-        curr_precision_10, curr_precision_15, curr_precision_20, curr_precision_25, curr_precision_50, curr_precision_100 = test_predicts(wav_dir, curr_ckpt, prominence, best_w_phi)
+        # curr_precision_10, curr_precision_15, curr_precision_20, curr_precision_25, curr_precision_50, curr_precision_100 = test_predicts(wav_dir, curr_ckpt, prominence, best_w_phi)
+        # curr_precision_10, curr_precision_15, curr_precision_20, curr_precision_25, curr_precision_50, curr_precision_100 = test_predicts(wav_dir, curr_ckpt, prominence, best_w_phi, language=args.language)
+        curr_precision_10, curr_precision_15, curr_precision_20, curr_precision_25, curr_precision_50, curr_precision_100 = test_predicts(wav_dir, curr_ckpt, prominence, best_w_phi, language=language, annotation=args.annotation)
         if curr_precision_10>best_precision_10:
             best_precision_10=curr_precision_10
             best_precision_10_.append(curr_precision_10)

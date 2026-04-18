@@ -47,3 +47,6 @@ Thumbs.db
 # Backup files
 *~ 
 *.bak
+
+# Antigravity architecture doc (local only)
+GEMINI.md
