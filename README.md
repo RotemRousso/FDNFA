@@ -186,7 +186,6 @@ conda activate FDNFA
 python generate_textgrids.py \
   --wav   /path/to/audio.wav \
   --ckpt  /path/to/checkpoint/12_best_model.pt \
-  --prominence 0.1 \
   --mode phoneme \
   --lang english \
   --annotation phn
@@ -201,7 +200,6 @@ conda activate FDNFA
 python generate_textgrids.py \
   --wav_dir /path/to/dataset/test/ \
   --ckpt    /path/to/checkpoint/12_best_model.pt \
-  --prominence 0.1 \
   --mode    word \
   --lang    english \
   --annotation wrd
@@ -214,7 +212,7 @@ python generate_textgrids.py \
 | `--wav` | file path | — | Path to a single input `.wav` file (16 kHz mono) |
 | `--wav_dir` | directory path | — | Path to a directory containing `.wav` files to process |
 | `--ckpt` | file path | — | Path to trained checkpoint (`.pt`) |
-| `--prominence` | float | `0.1` | Peak detection prominence threshold |
+
 | `--mode` | `phoneme`, `word` | `phoneme` | Alignment granularity. `phoneme` = phoneme-level (default). `word` = word-level alignment (zero-shot, no additional training needed). |
 | `--lang` | `english`, `multilingual` | `english` | Language setting. `english` = default English phoneme alignment (same as training). `multilingual` = any non-English language (zero-shot cross-lingual). |
 | `--annotation` | any string | `phn` | Annotation file extension to look for next to the `.wav` file. Use the extension that matches your data (e.g. `phn`, `wrd`, `word`). |
@@ -225,7 +223,7 @@ The `.wav` file must have a paired annotation file in the same directory, provid
 
 ```bash
 # English phoneme-level (default)
-python generate_textgrids.py --wav_dir my_dataset/ --ckpt model.pt --prominence 0.1
+python generate_textgrids.py --wav_dir my_dataset/ --ckpt model.pt
 
 # English word-level (zero-shot, no additional training)
 python generate_textgrids.py --wav_dir my_dataset/ --ckpt model.pt --mode word --annotation wrd
@@ -253,7 +251,6 @@ conda activate FDNFA
 python test_results.py \
   --wav  /path/to/test/wavs/ \
   --ckpt /path/to/run/dir/ \
-  --prominence 0.1 \
   --mode phoneme \
   --lang english \
   --annotation phn
@@ -265,7 +262,7 @@ python test_results.py \
 |------|---------|---------|-------------|
 | `--wav` | directory path | — | Directory containing `.wav` files to evaluate |
 | `--ckpt` | path | — | Checkpoint directory (sweeps `{idx}_best_model.pt`) or a single `.pt` file |
-| `--prominence` | float | `None` | Peak detection prominence threshold |
+
 | `--mode` | `phoneme`, `word` | `phoneme` | Alignment granularity — same meaning as in `predict.py` |
 | `--lang` | `english`, `multilingual` | `english` | Language setting — same meaning as in `predict.py` |
 | `--annotation` | any string | `phn` | Annotation file extension — same meaning as in `predict.py` |
@@ -282,8 +279,7 @@ To use Dutch phoneme annotations (IFA corpus format):
 ```bash
 python predict.py \
   --wav  /path/to/dutch_audio.wav \
-  --ckpt /path/to/checkpoint.pt \
-  --prominence 0.1
+  --ckpt /path/to/checkpoint.pt
 ```
 Then set `language = "dutch"` in `predict.py` (`main_predict(..., language="dutch")`).
 
@@ -308,8 +304,6 @@ Saves four heatmap plots to `<run_dir>/latent_representations/`:
 - `latent_comparison_epoch0_vs_best.png` — side-by-side comparison
 - `latent_difference_best_minus_epoch0.png` — difference map
 
-See [`LATENT_VISUALIZATION_README.md`](LATENT_VISUALIZATION_README.md) for details.
-
 ---
 
 ## Project Structure
@@ -331,17 +325,11 @@ FDNFA/
 ├── scripts/                         # Data preparation & utilities
 ├── archive/                         # Old scripts and backups
 ├── requirements.txt
-├── ARCHITECTURE.md                  # Full architecture documentation
-└── LATENT_VISUALIZATION_README.md
 ```
 
 ---
 
-## Architecture Documentation
 
-For a detailed technical description of every component — including the MNCE loss formulation, Soft-DP algorithm, and data pipeline — see [`ARCHITECTURE.md`](ARCHITECTURE.md).
-
----
 
 ## License
 

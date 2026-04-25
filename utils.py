@@ -517,7 +517,7 @@ def length_to_mask(length, max_len=None, dtype=None):
         mask = torch.as_tensor(mask, dtype=dtype, device=length.device)
     return mask
 
-def detect_peaks_worker(xi,w_phi, p_seq, original_lengths, probs_real, len_ratio, prominence, width, distance):
+def detect_peaks_worker(xi,w_phi, p_seq, original_lengths, probs_real, len_ratio, width, distance):
     print(f"num peaks = {len(p_seq)}")
     print(f"xi type: {type(xi)}")
     preds_np = xi.requires_grad_(True)
@@ -545,7 +545,7 @@ def detect_peaks(x,w_phi, original_lengths_all, phonemes, len_ratio, probs_real_
         original_lengths = original_lengths_all
         probs_real = probs_real_all
         if len(xi)!=0:
-            result = detect_peaks_worker(xi, w_phi, p_seq, [original_lengths], probs_real, len_ratio,prominence=0.1, width=None, distance=None)
+            result = detect_peaks_worker(xi, w_phi, p_seq, [original_lengths], probs_real, len_ratio, width=None, distance=None)
         out.append(result)
     
     return out
@@ -559,7 +559,6 @@ class PrecisionRecallMetric:
         self.eps = 1e-5
         self.data = []
         self.tolerance = 2
-        self.prominence_range = [1]
         self.width_range = [1]
         self.distance_range = [1]
 
@@ -585,7 +584,7 @@ class PrecisionRecallMetric:
             self.data.append((seg_i, pos_pred_i, length_i.item(),[original_length.item()], probs, phonemes))
 
 
-    def get_stats(self, width=None, prominence=None, distance=None):
+    def get_stats(self, width=None, distance=None):
         print(f"calculating metrics using {len(self.data)} entries")
         max_rval = -float("inf")
         min_l1_dist = float("inf")
@@ -599,18 +598,15 @@ class PrecisionRecallMetric:
 
         width_range = self.width_range
         distance_range = self.distance_range
-        prominence_range = self.prominence_range
 
-        if prominence is not None:
+        if width is not None:
             width_range = [width]
             distance_range = [distance]
-            prominence_range = [prominence]
         sr = 16000
         len_ratio = 161.34011627906978
 
         for width in width_range:
-            for prominence in prominence_range:
-                for distance in distance_range:
+            for distance in distance_range:
                     for (y, yhat,original_len, phoneme, prob) in zip(segs, yhats, original_lengths_all, phonemes, probs):
                         if isinstance(y,list):
                             y = torch.tensor(y, device=yhat.device, dtype=yhat.dtype)
@@ -631,9 +627,9 @@ class PrecisionRecallMetric:
                         if l1_dist<min_l1_dist:
                             min_l1_dist = l1_dist
                             out = (l1_dist,l2_dist)
-                            best_params = width, prominence, distance
+                            best_params = width, distance
         self.zero()
-        print(f"best peak detection params: {best_params} (width, prominence, distance)")
+        print(f"best peak detection params: {best_params} (width, distance)")
         print(f"best peak detection L1_DIST: {l1_dist}")
         print(f"best peak detection L2_DIST: {l2_dist}")
         return out, best_params

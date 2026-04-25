@@ -44,12 +44,12 @@ def create_textgrid(duration, tiers):
             
     return tg
 
-def process_single_file(wav_path, ckpt, prominence, mode, lang, annotation):
+def process_single_file(wav_path, ckpt, mode, lang, annotation):
     # Determine internal language
     language = "dutch" if (mode == "word" or lang == "multilingual") else "english"
     
     # Run prediction
-    pred_bound, truth_bound, mapped_ph = main_predict(wav_path, ckpt, prominence, w_phi=0.5, language=language, annotation=annotation)
+    pred_bound, truth_bound, mapped_ph = main_predict(wav_path, ckpt, w_phi=0.5, language=language, annotation=annotation)
     
     # Read original labels
     base_dir = os.path.dirname(wav_path)
@@ -128,20 +128,20 @@ def main():
     parser.add_argument('--wav', help='path to a single wav file')
     parser.add_argument('--wav_dir', help='path to a directory of wav files')
     parser.add_argument('--ckpt', required=True, help='path to checkpoint file')
-    parser.add_argument('--prominence', type=float, default=0.1, help='prominence for peak detection (default: 0.1)')
+
     parser.add_argument('--mode', type=str, default='phoneme', choices=['phoneme', 'word'])
     parser.add_argument('--lang', type=str, default='english', choices=['english', 'multilingual'])
     parser.add_argument('--annotation', type=str, default='phn')
     args = parser.parse_args()
 
     if args.wav:
-        process_single_file(args.wav, args.ckpt, args.prominence, args.mode, args.lang, args.annotation)
+        process_single_file(args.wav, args.ckpt, args.mode, args.lang, args.annotation)
     elif args.wav_dir:
         wavs = [f for f in os.listdir(args.wav_dir) if f.lower().endswith(".wav")]
         for wav_file in tqdm(wavs, desc="Processing WAV files"):
             wav_path = os.path.join(args.wav_dir, wav_file)
             try:
-                process_single_file(wav_path, args.ckpt, args.prominence, args.mode, args.lang, args.annotation)
+                process_single_file(wav_path, args.ckpt, args.mode, args.lang, args.annotation)
             except Exception as e:
                 print(f"Failed to process {wav_path}: {e}")
     else:

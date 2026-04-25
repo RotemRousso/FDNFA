@@ -14,8 +14,7 @@ import numpy as np
 import os
 
 
-# def test_predicts(wav_dir, ckpt, prominence, w_phi, language="english"):
-def test_predicts(wav_dir, ckpt, prominence, w_phi, language="english", annotation="phn"):
+def test_predicts(wav_dir, ckpt, w_phi, language="english", annotation="phn"):
     total_sum = 0
     num_10 = 0
     num_15 = 0
@@ -37,10 +36,7 @@ def test_predicts(wav_dir, ckpt, prominence, w_phi, language="english", annotati
         # if file_count<=100000000000000000:
         if file_count<=100000000000:
             wav_file_path = os.path.join(wav_dir,wav_file_name)
-            # pred_bound, truth_bound = main_predict(wav_file_path,ckpt,prominence,w_phi, language="english")
-            # pred_bound, truth_bound = main_predict(wav_file_path,ckpt,prominence,w_phi, language="dutch")
-            # pred_bound, truth_bound = main_predict(wav_file_path,ckpt,prominence,w_phi, language=language)
-            pred_bound, truth_bound, _ = main_predict(wav_file_path,ckpt,prominence,w_phi, language=language, annotation=annotation)
+            pred_bound, truth_bound, _ = main_predict(wav_file_path,ckpt,w_phi, language=language, annotation=annotation)
             
             # ________OCT20 TRY_________________
             pred_bound = pred_bound[1:] 
@@ -110,7 +106,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Unsupervised segmentation inference script')
     parser.add_argument('--wav', help='path to wav file')
     parser.add_argument('--ckpt', help='path to checkpoint file')
-    parser.add_argument('--prominence', type=float, default=None, help='prominence for peak detection (default: 0.05)')
+
     # parser.add_argument('--language', type=str, default='english', choices=['english', 'dutch'], ...)
     parser.add_argument('--mode', type=str, default='phoneme', choices=['phoneme', 'word'],
                         help='Alignment granularity: "phoneme" = phoneme-level alignment (default). '
@@ -127,7 +123,7 @@ if __name__ == "__main__":
     #   word-level alignment (any language) OR any non-English language
     language = "dutch" if (args.mode == "word" or args.lang == "multilingual") else "english"
     
-    # preds,times_sec = main_predict(args.wav, args.ckpt, args.prominence)
+    # preds,times_sec = main_predict(args.wav, args.ckpt)
     # just for check rn: 
     # ckpt = "/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/DP_AFTERDEBUG_tmux3Ironman_best_l1dist_val0.9_17MARCH/2025-03-17_16-21-22-default/epoch=23.ckpt"
     # ckpt = "/home/rotem/projects/CFA/DCAF/runs/DCAF_Hulk31MarchTIMITplaygrounds_tmux26_newconf/2025-04-01_17-30-16-default/epoch=17.ckpt"
@@ -237,9 +233,8 @@ if __name__ == "__main__":
     wav_dir = "/home/rotem/projects/datasets/timit/timit_tixed/test/"
     # wav_dir = "/home/rotem/projects/datasets/timit/timit_tixed/train/"
     
-    prominence =  0.1
     best_w_phi = 0.5
-    # best_precision_25 = test_predicts(wav_dir, ckpt, prominence, best_w_phi)
+    # best_precision_25 = test_predicts(wav_dir, ckpt, best_w_phi)
     # for w_phi in tqdm([0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]):
     best_precision_10_, best_precision_15_, best_precision_20_, best_precision_25_, best_precision_50_, best_precision_100_  = [], [], [], [], [], []
     best_ckpt_10_, best_ckpt_15_, best_ckpt_20_, best_ckpt_25_, best_ckpt_50_, best_ckpt_100_  = [], [], [], [], [], []
@@ -271,9 +266,7 @@ if __name__ == "__main__":
     for idx in tqdm([12]):
         curr_ckpt = f"{ckpt}{idx}_best_model.pt"
         print(f"Testing: {curr_ckpt}")
-        # curr_precision_10, curr_precision_15, curr_precision_20, curr_precision_25, curr_precision_50, curr_precision_100 = test_predicts(wav_dir, curr_ckpt, prominence, best_w_phi)
-        # curr_precision_10, curr_precision_15, curr_precision_20, curr_precision_25, curr_precision_50, curr_precision_100 = test_predicts(wav_dir, curr_ckpt, prominence, best_w_phi, language=args.language)
-        curr_precision_10, curr_precision_15, curr_precision_20, curr_precision_25, curr_precision_50, curr_precision_100 = test_predicts(wav_dir, curr_ckpt, prominence, best_w_phi, language=language, annotation=args.annotation)
+        curr_precision_10, curr_precision_15, curr_precision_20, curr_precision_25, curr_precision_50, curr_precision_100 = test_predicts(wav_dir, curr_ckpt, best_w_phi, language=language, annotation=args.annotation)
         if curr_precision_10>best_precision_10:
             best_precision_10=curr_precision_10
             best_precision_10_.append(curr_precision_10)
@@ -337,13 +330,10 @@ if __name__ == "__main__":
     
     
     
-    # prominence =  0.1
-    # best_w_phi = 0.5
-    # best_precision_25 = test_predicts(wav_dir, ckpt, prominence, best_w_phi)
     # # for w_phi in tqdm([0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]):
     # for w_phi in tqdm([]):
     #     print(f"curr w_phi = {w_phi}")
-    #     curr_precision_25 = test_predicts(wav_dir, ckpt, prominence, w_phi)
+    #     curr_precision_25 = test_predicts(wav_dir, ckpt, w_phi)
     #     if curr_precision_25>best_precision_25:
     #         best_precision_25 = curr_precision_25
     #         best_w_phi = w_phi

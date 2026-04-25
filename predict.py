@@ -18,9 +18,7 @@ import os
 import dutch_preprocess
 from utils import timit_to_leehon_map_MACRO, timit_leehon_39_phonemes, timit_61_phonemes
 
-# def main_predict(wav, ckpt, prominence,w_phi, language="english"):
-# def main_predict(wav, ckpt, prominence,w_phi, language="dutch"):
-def main_predict(wav, ckpt, prominence, w_phi, language="english", annotation="phn"):
+def main_predict(wav, ckpt, w_phi, language="english", annotation="phn"):
     print(f"running inference on: {wav}")
     print(f"running inferece using ckpt: {ckpt}")
     print("\n\n", 90 * "-")
@@ -41,7 +39,7 @@ def main_predict(wav, ckpt, prominence, w_phi, language="english", annotation="p
     
     
     peak_detection_params = dill.loads(ckpt['peak_detection_params'])['cpc_1']
-    peak_detection_params["prominence"] = prominence
+    # peak_detection_params["prominence"] = prominence # Unused
     # load data
     audio, sr = torchaudio.load(wav)
     assert sr == 16000, "model was trained with audio sampled at 16khz, please downsample."
@@ -334,7 +332,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Unsupervised segmentation inference script')
     parser.add_argument('--wav', help='path to wav file')
     parser.add_argument('--ckpt', help='path to checkpoint file')
-    parser.add_argument('--prominence', type=float, default=None, help='prominence for peak detection (default: 0.05)')
+
     # parser.add_argument('--language', type=str, default='english', choices=['english', 'dutch'], ...)
     parser.add_argument('--mode', type=str, default='phoneme', choices=['phoneme', 'word'],
                         help='Alignment granularity: "phoneme" = phoneme-level alignment (default). '
@@ -350,7 +348,4 @@ if __name__ == "__main__":
     # language="dutch" is the legacy internal name for the general non-default path:
     #   word-level alignment (any language) OR any non-English language
     # -- main_predict(args.wav, args.ckpt, args.prominence,w_phi=0.5, language="english")
-    # -- main_predict(args.wav, args.ckpt, args.prominence,w_phi=0.5, language="dutch")
-    language = "dutch" if (args.mode == "word" or args.lang == "multilingual") else "english"
-    main_predict(args.wav, args.ckpt, args.prominence, w_phi=0.5, language=language, annotation=args.annotation)
-
+    main_predict(args.wav, args.ckpt, w_phi=0.5, language=language, annotation=args.annotation)

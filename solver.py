@@ -30,7 +30,6 @@ class Solver(torch.nn.Module):
         self.current_epoch = 0
         
         self.peak_detection_params = defaultdict(lambda: {
-            "prominence": 0.05,
             "width":      None,
             "distance":   None
         })

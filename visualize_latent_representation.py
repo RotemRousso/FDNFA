@@ -154,14 +154,13 @@ def create_difference_plot(z_epoch0, z_best, output_dir):
     plt.close()
 
 
-def main_visualize(wav_path, run_dir, prominence=None, w_phi=0.5):
+def main_visualize(wav_path, run_dir, w_phi=0.5):
     """
     Main inference function to visualize latent representations.
     
     Args:
         wav_path: path to audio file
         run_dir: path to training run directory (contains checkpoints and config)
-        prominence: peak detection prominence (not used in this script but kept for API consistency)
         w_phi: weight for phi (not used in this script but kept for API consistency)
     """
     
@@ -320,8 +319,7 @@ if __name__ == "__main__":
                         help='Path to audio file (.wav)')
     parser.add_argument('--run-dir', type=str, required=True,
                         help='Path to training run directory (where checkpoints are saved)')
-    parser.add_argument('--prominence', type=float, default=0.05,
-                        help='Peak detection prominence (for API consistency, not used)')
+
     parser.add_argument('--w-phi', type=float, default=0.5,
                         help='Weight for phi (for API consistency, not used)')
     
@@ -330,6 +328,5 @@ if __name__ == "__main__":
     main_visualize(
         wav_path=args.wav,
         run_dir=args.run_dir,
-        prominence=args.prominence,
         w_phi=args.w_phi
     )
