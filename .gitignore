@@ -18,9 +18,10 @@ runs/
 env/
 venv/
 
-# Logs and debugging
+# Logs, debugging, and plots
 *.log
 *.out
+*.png
 
 # PyTorch/TensorFlow/ML-specific
 wandb/
@@ -48,5 +49,3 @@ Thumbs.db
 *~ 
 *.bak
 
-# Antigravity architecture doc (local only)
-GEMINI.md
