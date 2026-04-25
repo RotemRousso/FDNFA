@@ -14,7 +14,6 @@ import numpy as np
 from pathlib import Path
 from argparse import Namespace
 import hydra
-from hydra import initialize, compose
 from omegaconf import DictConfig, OmegaConf
 import dill
 

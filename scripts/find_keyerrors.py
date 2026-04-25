@@ -1,4 +1,6 @@
 import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import your mapping dictionary
 from utils import timit_to_leehon_map_MACRO
@@ -24,9 +26,9 @@ def scan_dataset(dataset_dir):
     return error_report
 
 if __name__ == "__main__":
-    dataset_dir = "/home/rotem/projects/datasets/IFA_dutch_reorder/train"  # <-- CHANGE THIS
+    dataset_dir = "datasets/IFA_dutch_reorder/train"  # <-- CHANGE THIS
     report = scan_dataset(dataset_dir)
-    with open("/home/rotem/projects/datasets/IFA_dutch_reorder/keyerror_phoneme_files.log", "w") as logf:
+    with open("keyerror_phoneme_files.log", "w") as logf:
         for fpath, keyerrors in report.items():
             logf.write(f"{fpath}: {keyerrors}\n")
-    print(f"Done. Found {len(report)} files with keyerrors. See /home/rotem/projects/datasets/IFA_dutch_reorder/keyerror_phoneme_files.log .")
+    print(f"Done. Found {len(report)} files with keyerrors. See keyerror_phoneme_files.log .")

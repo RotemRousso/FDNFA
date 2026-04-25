@@ -6,9 +6,8 @@ from argparse import Namespace
 import torch
 import torchaudio
 import torch.nn.functional as F
-from utils import (detect_peaks,  max_min_norm, replicate_first_k_frames,
-                   get_timit_61_phoneme_mappings, get_mu_stats, get_sigma_stats, timit_to_leehon,
-                   phoneme_alignment, compute_phi_1,compute_phi_2,compute_phi_3,compute_phi_4)
+from utils import (max_min_norm,
+                   get_timit_61_phoneme_mappings)
 from next_frame_classifier import NextFrameClassifier
 
 from dataloader import spectral_size
@@ -328,7 +327,8 @@ def main_predict(wav, ckpt, prominence, w_phi, language="english", annotation="p
     # print(alignment_ms)
 
     pred_bound, truth_bound = preds , times_sec
-    return pred_bound, truth_bound
+    mapped_ph = lh39_ph if language == "dutch" else None
+    return pred_bound, truth_bound, mapped_ph
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Unsupervised segmentation inference script')

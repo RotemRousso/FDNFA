@@ -59,8 +59,8 @@ def convert_timit_to_phn(wav_dir, label_dir, output_dir, sample_rate=16000):
 
 # --- CONFIGURATION ---
 # Update these paths based on your environment
-WAV_ROOT = "/home/rotem/projects/datasets/IFA_dutch/speech"
-LABEL_ROOT = "/home/rotem/projects/datasets/IFA_dutch/labels"
-FINAL_OUTPUT = "/home/rotem/projects/datasets/IFA_dutch_ready"
+WAV_ROOT = "datasets/IFA_dutch/speech"
+LABEL_ROOT = "datasets/IFA_dutch/labels"
+FINAL_OUTPUT = "datasets/IFA_dutch_ready"
 
 convert_timit_to_phn(WAV_ROOT, LABEL_ROOT, FINAL_OUTPUT)

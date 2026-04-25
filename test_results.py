@@ -40,7 +40,7 @@ def test_predicts(wav_dir, ckpt, prominence, w_phi, language="english", annotati
             # pred_bound, truth_bound = main_predict(wav_file_path,ckpt,prominence,w_phi, language="english")
             # pred_bound, truth_bound = main_predict(wav_file_path,ckpt,prominence,w_phi, language="dutch")
             # pred_bound, truth_bound = main_predict(wav_file_path,ckpt,prominence,w_phi, language=language)
-            pred_bound, truth_bound = main_predict(wav_file_path,ckpt,prominence,w_phi, language=language, annotation=annotation)
+            pred_bound, truth_bound, _ = main_predict(wav_file_path,ckpt,prominence,w_phi, language=language, annotation=annotation)
             
             # ________OCT20 TRY_________________
             pred_bound = pred_bound[1:] 

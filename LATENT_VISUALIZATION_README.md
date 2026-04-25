@@ -18,7 +18,7 @@ This script visualizes how the CNN encoder learns features by comparing the late
 ### Basic usage
 
 ```bash
-cd /home/rotem/projects/CFA/DCAF2/DCAF2.0
+cd FDNFA
 python visualize_latent_representation.py \
   --wav <path_to_audio.wav> \
   --run-dir <path_to_training_run_directory>
@@ -26,12 +26,12 @@ python visualize_latent_representation.py \
 
 ### Example
 
-Assuming you trained a model and checkpoints are in `/home/rotem/projects/CFA/DCAF2/DCAF2.0/runs/Dec2_BuckeyeOrig_tmux0Elektra_gpu0/YYYY-MM-DD_HH-MM-SS-default`:
+Assuming you trained a model and checkpoints are in `runs/Dec2_BuckeyeOrig_tmux0Elektra_gpu0/YYYY-MM-DD_HH-MM-SS-default`:
 
 ```bash
 python visualize_latent_representation.py \
   --wav /path/to/your/audio.wav \
-  --run-dir /home/rotem/projects/CFA/DCAF2/DCAF2.0/runs/Dec2_BuckeyeOrig_tmux0Elektra_gpu0/YYYY-MM-DD_HH-MM-SS-default
+  --run-dir runs/Dec2_BuckeyeOrig_tmux0Elektra_gpu0/YYYY-MM-DD_HH-MM-SS-default
 ```
 
 ### Optional parameters
@@ -56,12 +56,12 @@ Plots are saved to: `<run_dir>/latent_representations/`
 After training with `main.py`, look for the run directory path in the training output. It's typically:
 
 ```
-/home/rotem/projects/CFA/DCAF2/DCAF2.0/runs/<run_name>/<YYYY-MM-DD_HH-MM-SS>-default/
+runs/<run_name>/<YYYY-MM-DD_HH-MM-SS>-default/
 ```
 
 For example:
 ```
-/home/rotem/projects/CFA/DCAF2/DCAF2.0/runs/Dec2_BuckeyeOrig_tmux0Elektra_gpu0/2025-12-02_14-30-15-default/
+runs/Dec2_BuckeyeOrig_tmux0Elektra_gpu0/2025-12-02_14-30-15-default/
 ```
 
 ## What to look for in the plots

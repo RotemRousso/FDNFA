@@ -3,8 +3,8 @@ import glob
 import shutil
 
 # --- Configuration ---
-ROOT_DIR = "/home/rotem/projects/datasets/IFA_dutch"
-OUTPUT_DIR = "/home/rotem/projects/datasets/IFA_Dutch_words_reordered"
+ROOT_DIR = "datasets/IFA_dutch"
+OUTPUT_DIR = "datasets/IFA_Dutch_words_reordered"
 SAMPLE_RATE = 16000 # Standard for TIMIT; change to 44100 if your wavs are high-res
 # ---------------------
 

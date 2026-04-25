@@ -142,7 +142,7 @@ def phoneme_alignment_Hard_DP(p_seq, w_phi, original_lengths, len_ratio, derivat
     plt.plot(best_start_times_cpu, range(len(best_start_times_cpu)), 'r.-', label='Argmax path')
     plt.legend()
     plt.tight_layout()
-    plt.savefig('/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/dp_matrix_hard_classic.png')
+    plt.savefig('dp_matrix_hard_classic.png')
     plt.close()
         
     return best_start_times
@@ -207,7 +207,7 @@ def phoneme_alignment_naive_peak_detection(p_seq, w_phi, original_lengths, len_r
     plt.plot(best_start_times_cpu, range(len(best_start_times_cpu)), 'r.-', label='Detected Peaks')
     plt.legend()
     plt.tight_layout()
-    save_path = '/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/peak_detection_ablation.png'
+    save_path = 'peak_detection_ablation.png'
     plt.savefig(save_path)
     plt.close()
     
@@ -303,9 +303,9 @@ def phoneme_alignment(p_seq, w_phi, original_lengths, len_ratio, derivative_pred
     plt.plot(best_start_times_cpu, range(len(best_start_times_cpu)), 'r.-', label='Best start times')
     plt.legend()
     plt.tight_layout()
-    plt.savefig('/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/dp_matrix_with_path_nov19.png')
-    plt.close()
-    print("DP matrix with path plot saved as /home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/dp_matrix_with_path_nov19.png")
+    plt.savefig('dp_matrix_with_path.png')
+    
+    print("DP matrix with path plot saved as dp_matrix_with_path.png")
         
     return best_start_times
 
@@ -455,8 +455,8 @@ def timit_to_leehon(timit_label):
     return timit_to_leehon_map.get(timit_label.lower(), None)
 
 def load_phoneme_stats():
-    phonemes_path = "/home/rotem/projects/CFA/changed_NFC_negative_not_random/phonemes_stats_timit/phonemes_39"
-    stats_path = "/home/rotem/projects/CFA/changed_NFC_negative_not_random/phonemes_stats_timit/phoneme_stats_39.out"
+    phonemes_path = "phonemes_39"
+    stats_path = "phoneme_stats_39.out"
     
     # Load phoneme names
     with open(phonemes_path, "r") as f:

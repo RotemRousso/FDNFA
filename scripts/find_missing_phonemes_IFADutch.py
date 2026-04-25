@@ -1,8 +1,11 @@
 import glob
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils import timit_to_leehon_map_MACRO, timit_leehon_39_phonemes
 
 # phn_files = glob.glob("/home/rotem/projects/datasets/IFA_dutch_reorder/train/*_ipa.phn")
-phn_files = glob.glob("/home/rotem/projects/datasets/IFA_dutch_reorder/val/*_ipa.phn")
+phn_files = glob.glob("datasets/IFA_dutch_reorder/val/*_ipa.phn")
 missing_phonemes = set()
 
 for fname in phn_files:

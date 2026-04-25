@@ -52,7 +52,15 @@ Raw waveform (16 kHz)
 
 ---
 
-## Installation
+## Clone Repository
+```bash
+git clone https://github.com/<your_username>/FDNFA.git
+cd FDNFA
+```
+
+---
+
+## Setup Environment
 
 ### Requirements
 - Python 3.8+
@@ -152,13 +160,17 @@ WANDB_MODE=disabled python main.py
 
 ---
 
-## Inference — Single File
+## TextGrid Generation (Inference)
 
-Run alignment on a single `.wav` file using a trained checkpoint:
+The main entry point for generating alignments is `generate_textgrids.py`. This script processes your audio and annotations, and outputs standard Praat `.TextGrid` files ready for linguistic analysis (similar to tools like Montreal Forced Aligner).
+
+### Option 1: Single File
+
+Run alignment on a single `.wav` file:
 
 ```bash
 conda activate FDNFA
-python predict.py \
+python generate_textgrids.py \
   --wav   /path/to/audio.wav \
   --ckpt  /path/to/checkpoint/12_best_model.pt \
   --prominence 0.1 \
@@ -167,13 +179,29 @@ python predict.py \
   --annotation phn
 ```
 
+### Option 2: Full Dataset Directory
+
+Run alignment on all `.wav` files inside a directory:
+
+```bash
+conda activate FDNFA
+python generate_textgrids.py \
+  --wav_dir /path/to/dataset/test/ \
+  --ckpt    /path/to/checkpoint/12_best_model.pt \
+  --prominence 0.1 \
+  --mode    word \
+  --lang    english \
+  --annotation wrd
+```
+
 **Flags:**
 
 | Flag | Choices | Default | Description |
 |------|---------|---------|-------------|
-| `--wav` | any path | — | Path to input `.wav` file (16 kHz mono) |
-| `--ckpt` | any path | — | Path to trained checkpoint (`.pt`) |
-| `--prominence` | float | `None` | Peak detection prominence threshold |
+| `--wav` | file path | — | Path to a single input `.wav` file (16 kHz mono) |
+| `--wav_dir` | directory path | — | Path to a directory containing `.wav` files to process |
+| `--ckpt` | file path | — | Path to trained checkpoint (`.pt`) |
+| `--prominence` | float | `0.1` | Peak detection prominence threshold |
 | `--mode` | `phoneme`, `word` | `phoneme` | Alignment granularity. `phoneme` = phoneme-level (default). `word` = word-level alignment (zero-shot, no additional training needed). |
 | `--lang` | `english`, `multilingual` | `english` | Language setting. `english` = default English phoneme alignment (same as training). `multilingual` = any non-English language (zero-shot cross-lingual). |
 | `--annotation` | any string | `phn` | Annotation file extension to look for next to the `.wav` file. Use the extension that matches your data (e.g. `phn`, `wrd`, `word`). |
@@ -184,20 +212,21 @@ The `.wav` file must have a paired annotation file in the same directory, provid
 
 ```bash
 # English phoneme-level (default)
-python predict.py --wav audio.wav --ckpt runs/my_run/12_best_model.pt --prominence 0.1
+python generate_textgrids.py --wav_dir my_dataset/ --ckpt model.pt --prominence 0.1
 
 # English word-level (zero-shot, no additional training)
-python predict.py --wav audio.wav --ckpt runs/my_run/12_best_model.pt --mode word --annotation wrd
+python generate_textgrids.py --wav_dir my_dataset/ --ckpt model.pt --mode word --annotation wrd
 
 # Any non-English language, phoneme-level (zero-shot cross-lingual)
-python predict.py --wav audio.wav --ckpt runs/my_run/12_best_model.pt --lang multilingual --annotation phn
+python generate_textgrids.py --wav_dir my_dataset/ --ckpt model.pt --lang multilingual --annotation phn
 
 # Any non-English language, word-level
-python predict.py --wav audio.wav --ckpt runs/my_run/12_best_model.pt --mode word --lang multilingual --annotation wrd
+python generate_textgrids.py --wav_dir my_dataset/ --ckpt model.pt --mode word --lang multilingual --annotation wrd
 ```
 
 **Output:**
-- Predicted boundary times in seconds (printed to stdout)
+- A standard `.TextGrid` file saved next to each input `.wav` file.
+- If `--mode word` is used, the `.TextGrid` will contain two tiers: `words` and `phones`.
 - Visualizations saved next to the input WAV: `<basename>_probs.png`, `<basename>_logits.png`, `<basename>_boundaries.png`
 
 ---
@@ -274,19 +303,22 @@ See [`LATENT_VISUALIZATION_README.md`](LATENT_VISUALIZATION_README.md) for detai
 
 ```
 FDNFA/
+├── generate_textgrids.py            # Main entry point (MFA-style CLI)
 ├── main.py                          # Training entry point
+├── predict.py                       # Low-level single-file inference
+├── test_results.py                  # Batch evaluation
 ├── solver.py                        # Train/val/test loop
 ├── next_frame_classifier.py         # Model + loss functions
 ├── dataloader.py                    # Dataset classes
 ├── utils.py                         # Soft-DP, metrics, phoneme maps
-├── predict.py                       # Single-file inference
-├── test_results.py                  # Batch evaluation
 ├── dutch_preprocess.py              # Cross-lingual phoneme mapping
 ├── visualize_latent_representation.py
 ├── conf/
 │   └── config.yaml                  # All hyperparameters (Hydra)
+├── scripts/                         # Data preparation & utilities
+├── archive/                         # Old scripts and backups
 ├── requirements.txt
-├── GEMINI.md                        # Full architecture documentation
+├── ARCHITECTURE.md                  # Full architecture documentation
 └── LATENT_VISUALIZATION_README.md
 ```
 
@@ -294,7 +326,7 @@ FDNFA/
 
 ## Architecture Documentation
 
-For a detailed technical description of every component — including the MNCE loss formulation, Soft-DP algorithm, and data pipeline — see paper mentioned above.
+For a detailed technical description of every component — including the MNCE loss formulation, Soft-DP algorithm, and data pipeline — see [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
 ---
 
