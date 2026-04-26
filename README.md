@@ -173,7 +173,25 @@ WANDB_MODE=disabled python main.py
 
 ---
 
-## TextGrid Generation (Inference)
+## Web Demo (Interactive Inference)
+
+FDNFA includes a user-friendly, interactive Gradio web interface for zero-shot forced alignment. You can upload audio files of any sample rate along with plain text transcripts (or standard annotation files) and instantly visualize the predicted boundaries, Soft-DP paths, and download TextGrid outputs.
+
+```bash
+conda activate FDNFA
+python demo_app.py
+```
+
+This will launch a local server (usually at `http://localhost:7860`). To gracefully shut down the server, simply close your browser tab.
+
+**Key Demo Features:**
+- **Zero-shot Plain Text Support:** Provide a plain `.txt` file with your sequence of words or phonemes separated by spaces. The app will align them without needing any prior ground-truth timestamps.
+- **Audio Auto-resampling:** Upload any standard audio file; it will be automatically resampled to the required 16 kHz internally.
+- **Rich Visualizations:** View the latent feature probabilities and the Soft-DP matrix path directly in the browser.
+
+---
+
+## TextGrid Generation (CLI Inference)
 
 The main entry point for generating alignments is `generate_textgrids.py`. This script processes your audio and annotations, and outputs standard Praat `.TextGrid` files ready for linguistic analysis (similar to tools like Montreal Forced Aligner).
 
@@ -215,7 +233,7 @@ python generate_textgrids.py \
 
 | `--mode` | `phoneme`, `word` | `phoneme` | Alignment granularity. `phoneme` = phoneme-level (default). `word` = word-level alignment (zero-shot, no additional training needed). |
 | `--lang` | `english`, `multilingual` | `english` | Language setting. `english` = default English phoneme alignment (same as training). `multilingual` = any non-English language (zero-shot cross-lingual). |
-| `--annotation` | any string | `phn` | Annotation file extension to look for next to the `.wav` file. Use the extension that matches your data (e.g. `phn`, `wrd`, `word`). |
+| `--annotation` | any string | `phn` | Annotation file extension to look for. Use `txt` for plain text transcripts (no ground-truth timestamps needed), or standard extensions (e.g. `phn`, `wrd`). |
 
 The `.wav` file must have a paired annotation file in the same directory, providing the phoneme or word sequence to align to.
 
@@ -231,8 +249,8 @@ python generate_textgrids.py --wav_dir my_dataset/ --ckpt model.pt --mode word -
 # Any non-English language, phoneme-level (zero-shot cross-lingual)
 python generate_textgrids.py --wav_dir my_dataset/ --ckpt model.pt --lang multilingual --annotation phn
 
-# Any non-English language, word-level
-python generate_textgrids.py --wav_dir my_dataset/ --ckpt model.pt --mode word --lang multilingual --annotation wrd
+# Zero-shot alignment directly from a plain text transcript (no timestamps needed)
+python generate_textgrids.py --wav_dir my_dataset/ --ckpt model.pt --mode word --annotation txt
 ```
 
 **Output:**

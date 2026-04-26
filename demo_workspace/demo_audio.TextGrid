@@ -1,0 +1,162 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0
+xmax = 2.6318604946136475
+tiers? <exists>
+size = 1
+item []:
+	item [1]:
+		class = "IntervalTier"
+		name = "phoneme"
+		xmin = 0
+		xmax = 2.6318604946136475
+		intervals: size = 37
+			intervals [1]:
+				xmin = 0.0
+				xmax = 0.13108885288238525
+				text = "k"
+			intervals [2]:
+				xmin = 0.13108885288238525
+				xmax = 0.1613401174545288
+				text = "ax"
+			intervals [3]:
+				xmin = 0.1613401174545288
+				xmax = 0.19159138202667236
+				text = "m"
+			intervals [4]:
+				xmin = 0.19159138202667236
+				xmax = 0.3025127351284027
+				text = "bcl"
+			intervals [5]:
+				xmin = 0.3025127351284027
+				xmax = 0.33276399970054626
+				text = "b"
+			intervals [6]:
+				xmin = 0.33276399970054626
+				xmax = 0.3428477346897125
+				text = "ay"
+			intervals [7]:
+				xmin = 0.3428477346897125
+				xmax = 0.5949417352676392
+				text = "n"
+			intervals [8]:
+				xmin = 0.5949417352676392
+				xmax = 0.6453604698181152
+				text = "q"
+			intervals [9]:
+				xmin = 0.6453604698181152
+				xmax = 0.7461980581283569
+				text = "ao"
+			intervals [10]:
+				xmin = 0.7461980581283569
+				xmax = 0.8873706459999084
+				text = "l"
+			intervals [11]:
+				xmin = 0.8873706459999084
+				xmax = 0.9680407047271729
+				text = "dh"
+			intervals [12]:
+				xmin = 0.9680407047271729
+				xmax = 1.018459439277649
+				text = "iy"
+			intervals [13]:
+				xmin = 1.018459439277649
+				xmax = 1.1092132329940796
+				text = "ix"
+			intervals [14]:
+				xmin = 1.1092132329940796
+				xmax = 1.1697157621383667
+				text = "ng"
+			intervals [15]:
+				xmin = 1.1697157621383667
+				xmax = 1.270553469657898
+				text = "gcl"
+			intervals [16]:
+				xmin = 1.270553469657898
+				xmax = 1.310888409614563
+				text = "g"
+			intervals [17]:
+				xmin = 1.310888409614563
+				xmax = 1.3512234687805176
+				text = "r"
+			intervals [18]:
+				xmin = 1.3512234687805176
+				xmax = 1.4016423225402832
+				text = "iy"
+			intervals [19]:
+				xmin = 1.4016423225402832
+				xmax = 1.4823123216629028
+				text = "dx"
+			intervals [20]:
+				xmin = 1.4823123216629028
+				xmax = 1.502479910850525
+				text = "iy"
+			intervals [21]:
+				xmin = 1.502479910850525
+				xmax = 1.593233585357666
+				text = "ix"
+			intervals [22]:
+				xmin = 1.593233585357666
+				xmax = 1.6335687637329102
+				text = "n"
+			intervals [23]:
+				xmin = 1.6335687637329102
+				xmax = 1.6940712928771973
+				text = "s"
+			intervals [24]:
+				xmin = 1.6940712928771973
+				xmax = 1.8049925565719604
+				text = "pau"
+			intervals [25]:
+				xmin = 1.8049925565719604
+				xmax = 1.8957463502883911
+				text = "ix"
+			intervals [26]:
+				xmin = 1.8957463502883911
+				xmax = 1.9259977340698242
+				text = "nx"
+			intervals [27]:
+				xmin = 1.9259977340698242
+				xmax = 1.9663326740264893
+				text = "ax"
+			intervals [28]:
+				xmin = 1.9663326740264893
+				xmax = 2.016751527786255
+				text = "l"
+			intervals [29]:
+				xmin = 2.016751527786255
+				xmax = 2.097421646118164
+				text = "aa"
+			intervals [30]:
+				xmin = 2.097421646118164
+				xmax = 2.1881752014160156
+				text = "r"
+			intervals [31]:
+				xmin = 2.1881752014160156
+				xmax = 2.268845558166504
+				text = "dcl"
+			intervals [32]:
+				xmin = 2.268845558166504
+				xmax = 2.2990965843200684
+				text = "jh"
+			intervals [33]:
+				xmin = 2.2990965843200684
+				xmax = 2.349515438079834
+				text = "bcl"
+			intervals [34]:
+				xmin = 2.349515438079834
+				xmax = 2.4201018810272217
+				text = "b"
+			intervals [35]:
+				xmin = 2.4201018810272217
+				xmax = 2.4402692317962646
+				text = "ow"
+			intervals [36]:
+				xmin = 2.4402692317962646
+				xmax = 2.541106939315796
+				text = "l"
+			intervals [37]:
+				xmin = 2.541106939315796
+				xmax = 2.6318604946136475
+				text = "h#"

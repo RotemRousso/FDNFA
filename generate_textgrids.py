@@ -48,18 +48,42 @@ def process_single_file(wav_path, ckpt, mode, lang, annotation):
     # Determine internal language
     language = "dutch" if (mode == "word" or lang == "multilingual") else "english"
     
-    # Run prediction
-    pred_bound, truth_bound, mapped_ph = main_predict(wav_path, ckpt, w_phi=0.5, language=language, annotation=annotation)
-    
-    # Read original labels
     base_dir = os.path.dirname(wav_path)
     base_name = os.path.basename(wav_path).replace('.wav', '')
-    ann_path = os.path.join(base_dir, f"{base_name}.{annotation}")
+    
+    actual_annotation = annotation
+    if annotation.lower() == "txt":
+        txt_path = os.path.join(base_dir, f"{base_name}.txt")
+        with open(txt_path, "r") as f:
+            import re
+            raw_text = f.read().strip()
+            clean_text = re.sub(r'[^\w\s]', '', raw_text)
+            labels = clean_text.split()
+            
+        audio, sr = torchaudio.load(wav_path)
+        audio_len = audio.shape[1]
+        interval = audio_len / len(labels) if len(labels) > 0 else 0
+        
+        actual_annotation = "dummy_phn"
+        dummy_path = os.path.join(base_dir, f"{base_name}.{actual_annotation}")
+        with open(dummy_path, "w") as f:
+            for i, label in enumerate(labels):
+                end_frame = int((i + 1) * interval)
+                f.write(f"0 {end_frame} {label}\n")
+
+    # Run prediction
+    pred_bound, truth_bound, mapped_ph = main_predict(wav_path, ckpt, w_phi=0.5, language=language, annotation=actual_annotation)
+    
+    # Read original labels
+    ann_path = os.path.join(base_dir, f"{base_name}.{actual_annotation}")
     
     with open(ann_path, "r") as f:
         lines = f.readlines()
         lines = [line.strip().split(" ") for line in lines if line.strip()]
         labels = [line[2] for line in lines]
+        
+    if annotation.lower() == "txt" and os.path.exists(dummy_path):
+        os.remove(dummy_path)
     
     audio, sr = torchaudio.load(wav_path)
     duration = audio.shape[1] / sr
