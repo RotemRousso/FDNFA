@@ -8,7 +8,7 @@ matplotlib.use('Agg')
 from tqdm import tqdm
 
 # Import main_predict from predict.py without modifying it
-from predict import main_predict
+from predict import main_predict, resolve_internal_language, resolve_default_ckpt
 import dutch_preprocess
 from utils import timit_to_leehon_map_MACRO, timit_61_phonemes
 
@@ -45,8 +45,7 @@ def create_textgrid(duration, tiers):
     return tg
 
 def process_single_file(wav_path, ckpt, mode, lang, annotation):
-    # Determine internal language
-    language = "dutch" if (mode == "word" or lang == "multilingual") else "english"
+    language = resolve_internal_language(lang, mode, annotation)
     
     base_dir = os.path.dirname(wav_path)
     base_name = os.path.basename(wav_path).replace('.wav', '')
@@ -151,21 +150,26 @@ def main():
     parser = argparse.ArgumentParser(description='Generate TextGrid files from FDNFA predictions')
     parser.add_argument('--wav', help='path to a single wav file')
     parser.add_argument('--wav_dir', help='path to a directory of wav files')
-    parser.add_argument('--ckpt', required=True, help='path to checkpoint file')
+    parser.add_argument('--ckpt', default=None,
+                        help='Path to checkpoint. If omitted, uses the bundled '
+                             'TIMIT-trained checkpoint for --lang english or the '
+                             'Buckeye-trained one for --lang multilingual.')
 
     parser.add_argument('--mode', type=str, default='phoneme', choices=['phoneme', 'word'])
     parser.add_argument('--lang', type=str, default='english', choices=['english', 'multilingual'])
     parser.add_argument('--annotation', type=str, default='phn')
     args = parser.parse_args()
 
+    ckpt = args.ckpt or resolve_default_ckpt(args.lang)
+
     if args.wav:
-        process_single_file(args.wav, args.ckpt, args.mode, args.lang, args.annotation)
+        process_single_file(args.wav, ckpt, args.mode, args.lang, args.annotation)
     elif args.wav_dir:
         wavs = [f for f in os.listdir(args.wav_dir) if f.lower().endswith(".wav")]
         for wav_file in tqdm(wavs, desc="Processing WAV files"):
             wav_path = os.path.join(args.wav_dir, wav_file)
             try:
-                process_single_file(wav_path, args.ckpt, args.mode, args.lang, args.annotation)
+                process_single_file(wav_path, ckpt, args.mode, args.lang, args.annotation)
             except Exception as e:
                 print(f"Failed to process {wav_path}: {e}")
     else:

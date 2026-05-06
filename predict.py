@@ -18,10 +18,17 @@ import os
 import dutch_preprocess
 from utils import timit_to_leehon_map_MACRO, timit_leehon_39_phonemes, timit_61_phonemes
 
-def main_predict(wav, ckpt, w_phi, language="english", annotation="phn"):
+def main_predict(wav, ckpt, w_phi, language="english", annotation="phn", no_plots=False):
     print(f"running inference on: {wav}")
     print(f"running inferece using ckpt: {ckpt}")
     print("\n\n", 90 * "-")
+
+    # Optional plot suppression for fast batch runs. Patches plt.savefig for
+    # the duration of this call so plots inside utils.phoneme_alignment are
+    # skipped too, without having to modify utils.py.
+    _orig_savefig = plt.savefig if no_plots else None
+    if no_plots:
+        plt.savefig = lambda *a, **k: None
 
     ckpt = torch.load(ckpt, map_location=lambda storage, loc: storage)
     hp = ckpt["hparams"]
@@ -67,7 +74,7 @@ def main_predict(wav, ckpt, w_phi, language="english", annotation="phn"):
     # load labels -- segmentation and phonemes
     with open(phn_path, "r") as f:
         lines = f.readlines()
-        lines = list(map(lambda line: line.split(" "), lines))
+        lines = list(map(lambda line: line.split(), lines))
 
         # get segment times
         times = torch.FloatTensor(list(map(lambda line: int(float(line[1]) / len_ratio), lines)))[:-1]  # don't count end time as boundary
@@ -77,6 +84,12 @@ def main_predict(wav, ckpt, w_phi, language="english", annotation="phn"):
         
         # get phonemes in each segment (for K times there should be K+1 phonemes)
         phonemes = list(map(lambda line: line[2].strip(), lines))
+
+    # Original input labels (one per .phn/.wrd/.txt line) — kept around for the
+    # truth-boundary text on plots. After G2P the `phonemes` variable is
+    # flattened into LH39 phonemes whose count differs from len(times), so we
+    # cache the per-line labels here before that transformation.
+    truth_labels = list(phonemes)
     
     if language == "dutch":
         lh39_ph = []
@@ -114,226 +127,145 @@ def main_predict(wav, ckpt, w_phi, language="english", annotation="phn"):
     
     phoneme_to_idx, idx_to_phoneme = get_timit_61_phoneme_mappings()
     
-    # # ------ in debug mode only can plot the z (as probs) --------
-    # import numpy as np
-    # import matplotlib.pyplot as plt
-    
-    # audio_spec = torchaudio.transforms.Spectrogram(n_fft=512)(audio.unsqueeze(0) if audio.dim() == 1 else audio)
-    # audio_spec_db = torchaudio.transforms.AmplitudeToDB()(audio_spec)
-
-    # fig, axes = plt.subplots(2, 1, figsize=(16, 12))
-    
-    # axes[0].imshow(audio_spec_db[0].detach().cpu().numpy(), aspect='auto', cmap='viridis')
-    # axes[0].set_xlabel('Frame Index')
-    # axes[0].set_ylabel('Frequency Bin')
-    # axes[0].set_title('(a) Original Spectrogram')
-    
-    # z_data = probs[0].detach().cpu().numpy().T
-    # axes[1].imshow(z_data, aspect='auto', cmap='viridis')
-    # axes[1].set_xlabel('Frame Index')
-    # axes[1].set_ylabel('z latent representation')
-    # axes[1].set_title('(b) z trained CNN Output')
-
-    # # plt.figure(figsize=(16, 6))
-    # # plt.imshow(probs[0].detach().cpu().numpy().T, aspect='auto', cmap='viridis')
-    # # plt.xlabel('z Frame Index')
-    # # plt.ylabel('z latent representation')
-    # # plt.title('z trained CNN Output')
-    # for i, s in enumerate(times):  # times is your list of segment boundaries in frames
-    #     axes[1].axvline(x=s, color='red', linestyle='--', linewidth=1, label='Truth boundary' if i == 0 else "")
-    # axes[1].legend(loc='upper right')
-    
-    # truth_signal = np.zeros(int(original_lengths[0]))
-    # for time in times:
-    #     idx = min(int(time), truth_signal.shape[0] - 1)
-    #     truth_signal[idx] = 1.0
-    
-    # # axes[2].bar(range(len(truth_signal)), truth_signal, width=1.0, color='red', alpha=0.6)
-    # # axes[2].set_xlabel('Frame Index')
-    # # axes[2].set_ylabel('Truth Boundary')
-    # # axes[2].set_title('(c) Truth Segmentation Boundaries')
-    # # axes[2].set_ylim([0, 1.2])
-    
-    # # for i, s in enumerate(times):
-    # #     axes[2].axvline(x=s, color='red', linestyle='--', linewidth=1.5)
-
-    
-    # plt.tight_layout()  # Adjust layout to prevent overlap
-    # plt.savefig("/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/z_cnn_out_and_truth_boundaries_ckpt12.png")
-    # print("/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/z_cnn_out_and_truth_boundaries_ckpt12.png")
-    # # ------------------------------------------------------------
-    
     
     phoneme_labels = [idx_to_phoneme[i] for i in range(39)]
     # phoneme_labels = [idx_to_phoneme[i] for i in range(61)]
     # phoneme_labels = [idx_to_phoneme[i] for i in range(41)]
     # probs_real = probs #F.softmax(probs, dim=-1) 
-    probs_real = F.softmax(probs, dim=-1) 
-   
-    probs_logits = probs.squeeze(0)
-    probs_real = probs_real.squeeze(0)
-    # Plot the probability map
-    probs_real = probs_real.detach().numpy()
+    probs_real = F.softmax(probs, dim=-1).squeeze(0).detach().numpy()
     
-    plt.figure(figsize=(15, 5))
-    # plt.imshow(torch.log(torch.tensor(probs_real.T)), aspect='auto', cmap='viridis')  # Transpose to make rows phonemes and columns frames
-    plt.imshow(probs_real.T, aspect='auto', cmap='viridis')  # Transpose to make rows phonemes and columns frames
-    plt.colorbar(label='Probability')
-    plt.xlabel('Frame Index')
-    plt.ylabel('Phoneme')
-    
-    plt.yticks(ticks=range(39), labels=phoneme_labels)
-    # plt.yticks(ticks=range(41), labels=phoneme_labels)
-    # plt.yticks(ticks=range(61), labels=phoneme_labels)
-    
-    plt.title('Frame-wise Label Probability Map')
-    
-    for i,s in enumerate(times):  # times is your list of segment boundaries in frames
-        plt.axvline(x=s, color='red', linestyle='--', linewidth=1, label='Truth boundary' if s == times[0] else "")
-        plt.text(s, probs_real.shape[1] + 1, phonemes[0][i], color='red', rotation=90, va='top', ha='center', fontsize=8)
-    
-    
-    plt.show()
     out_dir = os.path.dirname(wav)
     base_name = os.path.basename(wav).replace('.wav', '')
-    # plt.savefig("/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/probs_DP_LOSS.png")
-    # print("/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/probs_DP_LOSS.png")
-    plt.savefig(os.path.join(out_dir, f"{base_name}_probs.png"))
-    print(os.path.join(out_dir, f"{base_name}_probs.png"))
-    # plt.savefig("/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/probs_try_phoneme_tmux9.png")
-    # print("/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/probs_try_phoneme_tmux9.png")
-    plt.close()
-    
+
     plt.figure(figsize=(15, 5))
-    plt.imshow(probs_logits.T, aspect='auto', cmap='viridis')  # Transpose to make rows phonemes and columns frames
+    plt.imshow(probs_real.T, aspect='auto', cmap='viridis')
     plt.colorbar(label='Probability')
     plt.xlabel('Frame Index')
     plt.ylabel('Phoneme')
-    # plt.yticks(ticks=range(61), labels=phoneme_labels)
     plt.yticks(ticks=range(39), labels=phoneme_labels)
     plt.title('Frame-wise Label Probability Map')
-    plt.show()
-    # plt.savefig("/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/logits_try_DP_loss.png")
-    # print("/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/logits_try_DP_loss.png")
-    plt.savefig(os.path.join(out_dir, f"{base_name}_logits.png"))
-    print(os.path.join(out_dir, f"{base_name}_logits.png"))
+    # Truth-boundary axvlines + per-segment label text. truth_labels is the
+    # original (pre-G2P) per-line input labels, so its length matches `times`.
+    for i, s in enumerate(times):
+        s_val = float(s)
+        plt.axvline(x=s_val, color='red', linestyle='--', linewidth=1,
+                    label='Truth boundary' if i == 0 else "")
+        if i < len(truth_labels):
+            plt.text(s_val, probs_real.shape[1] + 1, truth_labels[i],
+                     color='red', rotation=90, va='top', ha='center', fontsize=8)
+    plt.savefig(os.path.join(out_dir, f"{base_name}_probs.png"))
     plt.close()
     
-    # run inference
-    preds = preds[1][0]  # get scores of positive pairs
-    preds = max_min_norm(preds)  # normalize scores (good for visualizations)
-    # preds = 1 - max_min_norm(preds)  # normalize scores (good for visualizations)
-
-    filename = os.path.basename(wav).split('/')[-1]
-    preds_np = preds.detach().numpy()
-    preds_np = preds_np[0] #*len_ratio/sr
-
+    # Latent boundary scores (CNN output) — used for the boundaries plot.
+    preds = preds[1][0]
+    preds = max_min_norm(preds)
+    preds_np = preds.detach().numpy()[0]
     median_h = np.median(preds_np)
     preds_np = preds_np - median_h
-    
-    # # ----------- 25 MARCH --------------
-    # preds_np[preds_np < 0] = 0
-    # # -----------------------------------
-    
-    signal = np.zeros(int(original_lengths[0])) #np.zeros(int(audio_len/len_ratio))
-    for time in times: #times_sec:
-        # signal[int(time)] = max(median_h,0.5) #-0.005  # Convert the float time to an integer index
-        idx = min(int(time), signal.shape[0] - 1)
-        signal[idx] = max(median_h, 0.5)
-    
-    # Before the plotting loop
-    signal_max_idx = signal.shape[0] - 1
-    times = [t for t in times if t <= signal_max_idx]
-    
-    # plt.figure(figsize=(12, 6))
-    # plt.plot(signal, marker='*', linestyle='-')
-    # # plt.plot(range(len(preds_np)), preds_np, marker='o')
-    # derivative_preds_np = torch.cat([torch.tensor([0]), torch.diff(torch.tensor(preds_np), dim=0)])
-    # plt.plot(range(len(derivative_preds_np)), -1* derivative_preds_np, marker='o')
-    # ALSO ADDED -1* PREDS INSTEAD OF PREDS IN THE PEAK DETECTION !!!
 
-    # num_peaks = len(phonemes) #TODO: FIX THAT
-    num_peaks = len(times_sec)
-    print(f"num peaks: {num_peaks}")
-    # -------- July 1 -------------------
-    # print("----- preds with detect peaks DP -----")
-    # preds = detect_peaks(x=(-1*preds), w_phi=w_phi,
-    #                      original_lengths_all= [original_lengths],
-    #                     #  lengths=[preds.shape[1]],#num_peaks=[len(seg[0])], #len(seg[0]),
-    #                      phonemes = phonemes,
-    #                      len_ratio = len_ratio,
-    #                      probs_real_all = [probs_real])  # run peak detection on scores
-    
-    preds = torch.tensor(preds_peaks[0], dtype=torch.float32)  # transform frame indexes to seconds
-    
-    # -----------------------------------
-    print ("-------- HELLO THIS IS PREDICT.PY -------- ")
-    print("truth boundaries (in seconds):")
-    print(times_sec)
-    
-    print("predicted boundaries (in seconds):")
-    print(preds)
-    
-    
+    # Predicted boundary timestamps (in seconds).
+    preds = torch.tensor(preds_peaks[0], dtype=torch.float32)
+    print(f"predicted boundaries (s): {preds}")
+
+    # Marker height: scale to the *typical* peak of the latent score so the
+    # triangles sit roughly on top of peaks instead of dwarfing them or
+    # vanishing into the noise floor. The signal is sparse, so we filter out
+    # near-zero values and take the median of what's left — robust to both
+    # outlier spikes and the long tail of zero-ish frames.
+    abs_p = np.abs(preds_np) if preds_np.size else np.array([])
+    if abs_p.size:
+        noise_thresh = 0.05 * float(np.max(abs_p))
+        peaks = abs_p[abs_p > noise_thresh]
+        marker_h = float(np.median(peaks)) if peaks.size else float(np.max(abs_p))
+    else:
+        marker_h = 0.1
+    if marker_h <= 0:
+        marker_h = 0.1
+
+    # Truth-boundary marker signal (peak per truth boundary, zero elsewhere).
+    signal = np.zeros(int(original_lengths[0]))
+    signal_max_idx = signal.shape[0] - 1
+    for t in times:
+        idx = min(int(t), signal_max_idx)
+        signal[idx] = marker_h
+    times_clipped = [t for t in times if float(t) <= signal_max_idx]
+
     plt.figure(figsize=(12, 6))
-    plt.plot(signal, marker='*', linestyle='-')
-    # plt.plot(range(len(preds_np)), preds_np, marker='o')
-    derivative_preds_np = torch.cat([torch.tensor([0]), torch.diff(torch.tensor(preds_np), dim=0)])
-    # plt.plot(range(len(derivative_preds_np)), -1* derivative_preds_np, marker='o')
-    plt.plot(range(len(derivative_preds_np)), derivative_preds_np, marker='*')
-    
-    
+    plt.plot(signal, marker='*', linestyle='-', label='Truth boundary marker')
+    derivative_preds_np = np.diff(preds_np)
+    derivative_preds_np = np.concatenate([[0], derivative_preds_np])
+    plt.plot(range(len(derivative_preds_np)), derivative_preds_np,
+             marker='o', label='Derivative of latent score', color='magenta')
+    plt.plot(range(len(preds_np)), preds_np,
+             marker='*', label='Latent score', color='red')
+
     preds_plot = np.zeros(int(original_lengths[0]))
     for pred in preds:
-        # TODO: FIX THAT
-        if int(pred*sr/len_ratio) <= len(preds_plot)-1:
-            preds_plot[int(pred*sr/len_ratio)] = max(median_h,0.5)
-    plt.plot(range(len(preds_plot)), preds_plot, marker='^')
-    
-    # plt.plot(range(len(preds_np)), preds_np, marker='o')
-    
-    
-    derivative_preds_np = np.diff(preds_np)
-    derivative_preds_np = np.concatenate([[0], derivative_preds_np]) 
-    plt.plot(range(len(derivative_preds_np)), derivative_preds_np, marker='o', label='Derivative of preds_np', color='magenta')
-    plt.plot(range(len(preds_np)), preds_np, marker='*', label='preds_np', color='red')
-    
+        idx = int(pred * sr / len_ratio)
+        if idx <= len(preds_plot) - 1:
+            preds_plot[idx] = marker_h
+    plt.plot(range(len(preds_plot)), preds_plot,
+             marker='^', label='Predicted boundary', linestyle='None')
+
     y_top = plt.ylim()[1]
-    for i, s in enumerate(times):  # times = list of segment boundaries (frame indices)
-        plt.axvline(x=s, color='red', linestyle='--', linewidth=1, label='Truth boundary' if i == 0 else "")
-        plt.text(s, y_top, phonemes[0][i], color='red', rotation=90, va='top', ha='center', fontsize=8)
-    
-    # plt.savefig(f'/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/preds_vs_truth_TIMIT_DP_LOSS_DETECT_PEAKS_w_ph_drivatie.png')
-    # print(f'/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/preds_vs_truth_TIMIT_DP_LOSS_DETECT_PEAKS_w_ph_drivatie.png')
+    for i, s in enumerate(times_clipped):
+        s_val = float(s)
+        plt.axvline(x=s_val, color='red', linestyle='--', linewidth=1,
+                    label='Truth boundary' if i == 0 else "")
+        if i < len(truth_labels):
+            plt.text(s_val, y_top, truth_labels[i], color='red',
+                     rotation=90, va='top', ha='center', fontsize=8)
+
+    plt.xlabel('Frame Index')
+    plt.ylabel('Score')
+    plt.title('Predicted Boundaries')
+    plt.legend(loc='upper right')
+    # Clip the y-axis to a few × typical-peak height so single outlier spikes
+    # don't visually squash the rest of the signal.
+    y_half = max(marker_h * 4.0, 0.1)
+    plt.ylim(-y_half, y_half)
     plt.savefig(os.path.join(out_dir, f"{base_name}_boundaries.png"))
-    print(os.path.join(out_dir, f"{base_name}_boundaries.png"))
     plt.close()
-    
-    # plt.savefig(f'/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/preds_vs_truth_{filename[:-4]}_TIMIT_DP_LOSS_DETECT_PEAKS_w_ph_drivatie.png')
-    # print(f'/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/preds_vs_truth_{filename[:-4]}_TIMIT_DP_LOSS_DETECT_PEAKS_w_ph_drivatie.png')
-    # plt.savefig(f'/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/preds_vs_truth_{filename[:-4]}_TIMIT_TMUX9_DETECT_PEAKS_w_ph_drivatie.png')
-    # print(f'/home/rotem/projects/CFA/changed_NFC_negative_not_random/runs/plots/preds_vs_truth_{filename[:-4]}_TIMIT_TMUX9_DETECT_PEAKS_w_ph_drivatie.png')
-    # ----------------------------------------------------------------------
 
-    
-    # p_seq = phonemes[0]
-    # dp_alignment = phoneme_alignment(p_seq,original_lengths,len_ratio,derivative_preds_np,probs_real)
-
-    # print(dp_alignment)
-    # print("in sec:")
-    # alignment_ms = dp_alignment*len_ratio/sr #*1000/16000
-    # print(alignment_ms)
-
-    pred_bound, truth_bound = preds , times_sec
+    pred_bound, truth_bound = preds, times_sec
     mapped_ph = lh39_ph if language == "dutch" else None
+
+    if no_plots:
+        plt.savefig = _orig_savefig
+
     return pred_bound, truth_bound, mapped_ph
+
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_CKPT_ENGLISH      = os.path.join(_SCRIPT_DIR, "pretrained_models", "fdnfa_timit_english.pt")
+# Buckeye is also English (spontaneous) but generalizes better to unseen
+# languages — preferred default for the multilingual / cross-lingual path.
+DEFAULT_CKPT_MULTILINGUAL = os.path.join(_SCRIPT_DIR, "pretrained_models", "fdnfa_buckeye_english.pt")
+
+def resolve_internal_language(lang: str, mode: str, annotation: str) -> str:
+    """
+    Map user-facing (--lang, --mode, --annotation) to the internal `language`
+    flag main_predict() understands.
+
+      'english' = no G2P; assumes labels are already TIMIT-39 phonemes.
+      'dutch'   = G2P pipeline (panphon-based mapping). Used for any non-English
+                  language, word-level mode, or plain-text input.
+    """
+    if lang == "english" and mode == "phoneme" and annotation.lower() == "phn":
+        return "english"
+    return "dutch"
+
+def resolve_default_ckpt(lang: str) -> str:
+    return DEFAULT_CKPT_MULTILINGUAL if lang == "multilingual" else DEFAULT_CKPT_ENGLISH
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Unsupervised segmentation inference script')
     parser.add_argument('--wav', help='path to wav file')
-    parser.add_argument('--ckpt', help='path to checkpoint file')
+    parser.add_argument('--ckpt', default=None,
+                        help='Path to checkpoint file. If omitted, uses '
+                             'pretrained_models/fdnfa_timit_english.pt for --lang english '
+                             'or fdnfa_buckeye_english.pt for --lang multilingual '
+                             '(Buckeye is also the recommended pick for cross-lingual zero-shot).')
 
-    # parser.add_argument('--language', type=str, default='english', choices=['english', 'dutch'], ...)
     parser.add_argument('--mode', type=str, default='phoneme', choices=['phoneme', 'word'],
                         help='Alignment granularity: "phoneme" = phoneme-level alignment (default). '
                              '"word" = word-level alignment (zero-shot, no additional training).')
@@ -341,11 +273,12 @@ if __name__ == "__main__":
                         help='Language setting: "english" = trained English phoneme alignment (default). '
                              '"multilingual" = any non-English language (zero-shot cross-lingual).')
     parser.add_argument('--annotation', type=str, default='phn',
-                        help='Annotation file extension to search for (e.g. phn, wrd, word). Default: phn')
+                        help='Annotation file extension to search for (e.g. phn, wrd, word, txt). Default: phn')
+    parser.add_argument('--no-plots', action='store_true',
+                        help='Skip per-file diagnostic plots (probs/logits/boundaries/dp_matrix) for faster runs.')
     args = parser.parse_args()
-    # Derive internal language flag from user-facing --mode and --lang
-    # language="english" is the classic default (phoneme-level English, same as training)
-    # language="dutch" is the legacy internal name for the general non-default path:
-    #   word-level alignment (any language) OR any non-English language
-    # -- main_predict(args.wav, args.ckpt, args.prominence,w_phi=0.5, language="english")
-    main_predict(args.wav, args.ckpt, w_phi=0.5, language=language, annotation=args.annotation)
+
+    ckpt = args.ckpt or resolve_default_ckpt(args.lang)
+    language = resolve_internal_language(args.lang, args.mode, args.annotation)
+    main_predict(args.wav, ckpt, w_phi=0.5, language=language,
+                 annotation=args.annotation, no_plots=args.no_plots)

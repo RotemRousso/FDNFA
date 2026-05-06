@@ -1,3 +1,4 @@
+import os
 import random
 import torch
 import torch.nn as nn
@@ -11,6 +12,14 @@ import concurrent.futures
 from typing import List, Sequence, Union
 import time
 from memory_profiler import profile
+
+# Optionally redirect the dp_matrix plot to a specific directory (used by demo).
+# Set via set_dp_matrix_out_dir() before calling inference; reset to None after.
+_dp_matrix_out_dir = None
+
+def set_dp_matrix_out_dir(path):
+    global _dp_matrix_out_dir
+    _dp_matrix_out_dir = path
 
 timit_leehon_39_phonemes = [
     'ao', 'ae', 'ah','aw', 'er', 'ay', 
@@ -69,7 +78,7 @@ def phoneme_alignment_Hard_DP(p_seq, w_phi, original_lengths, len_ratio, derivat
         probs_real = torch.tensor(probs_real, device=device)
     cumsum_probs = torch.cumsum(probs_real, dim=0)
     
-    phoneme_mappings = {p.lower(): timit_to_leehon_map_MACRO[p.lower()] if p.lower() not in timit_leehon_39_phonemes else p.lower() for p in p_seq}
+    phoneme_mappings = {p.lower(): timit_to_leehon_map_MACRO.get(p.lower(), 'sil') if p.lower() not in timit_leehon_39_phonemes else p.lower() for p in p_seq}
     derivatives = torch.cat([torch.tensor([0], device=device), torch.diff(derivative_preds_np, dim=0)])
 
     # Initialize DP matrix with very low value
@@ -212,9 +221,8 @@ def phoneme_alignment_naive_peak_detection(p_seq, w_phi, original_lengths, len_r
     plt.close()
     
     print(f"Ablation plot saved as {save_path}")
-        
+
     return best_start_times
-# # # ---------------------------- End of ablations ---------------------------
 
 # ------------------------- phoneme alignment main ------------------------
 def phoneme_alignment(p_seq, w_phi, original_lengths, len_ratio, derivative_preds_np, probs_real):
@@ -229,15 +237,11 @@ def phoneme_alignment(p_seq, w_phi, original_lengths, len_ratio, derivative_pred
     
     
     
-    phoneme_mappings = {p.lower(): timit_to_leehon_map_MACRO[p.lower()] if p.lower() not in timit_leehon_39_phonemes else p.lower() for p in p_seq}
+    phoneme_mappings = {p.lower(): timit_to_leehon_map_MACRO.get(p.lower(), 'sil') if p.lower() not in timit_leehon_39_phonemes else p.lower() for p in p_seq}
     derivatives = torch.cat([torch.tensor([0], device=derivative_preds_np.device), torch.diff(derivative_preds_np, dim=0)])
 
     dp_mat = torch.full((n, T, T), float(-1e9), device=device)
-    derivatives = derivatives
-    w_phi = w_phi
-    cumsum_probs = cumsum_probs
-    
-    
+
     p_idx0 = phoneme_to_idx_MACRO[phoneme_mappings[p_seq[0].lower()]]
 
     # Vectorized init for first phoneme
@@ -303,9 +307,9 @@ def phoneme_alignment(p_seq, w_phi, original_lengths, len_ratio, derivative_pred
     plt.plot(best_start_times_cpu, range(len(best_start_times_cpu)), 'r.-', label='Best start times')
     plt.legend()
     plt.tight_layout()
-    plt.savefig('dp_matrix_with_path.png')
-    
-    print("DP matrix with path plot saved as dp_matrix_with_path.png")
+    _save_path = os.path.join(_dp_matrix_out_dir or '.', 'dp_matrix_with_path.png')
+    plt.savefig(_save_path)
+    print(f"DP matrix with path plot saved as {_save_path}")
         
     return best_start_times
 

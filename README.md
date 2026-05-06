@@ -173,21 +173,44 @@ WANDB_MODE=disabled python main.py
 
 ---
 
+## Pretrained Checkpoints
+
+Two checkpoints ship with the repo (under `pretrained_models/`):
+
+| File | Trained on | Best for |
+|------|------------|----------|
+| `fdnfa_timit_english.pt`   | TIMIT (read English)          | English phoneme alignment |
+| `fdnfa_buckeye_english.pt` | Buckeye (spontaneous English) | Spontaneous English; **also the recommended pick for cross-lingual / multilingual zero-shot alignment** (Dutch, German, Hebrew, ...) — its broader acoustic variability generalizes better than TIMIT-only training. |
+
+The CLI tools (`predict.py`, `generate_textgrids.py`, `test_results.py`) and the
+web demo (`app.py`) all auto-pick the right one from the `--lang` flag — pass
+`--lang english` for the TIMIT checkpoint, `--lang multilingual` for the Buckeye
+checkpoint. Override with `--ckpt /path/to/your.pt` (or upload one in the demo).
+
+For HuggingFace Spaces deployment, set `HF_MODEL_REPO` (and `HF_TOKEN` if private)
+as Space Secrets — `app.py` will download both files from that repo on first use.
+
+---
+
 ## Web Demo (Interactive Inference)
 
-FDNFA includes a user-friendly, interactive Gradio web interface for zero-shot forced alignment. You can upload audio files of any sample rate along with plain text transcripts (or standard annotation files) and instantly visualize the predicted boundaries, Soft-DP paths, and download TextGrid outputs.
+FDNFA includes an interactive Gradio web interface for zero-shot forced alignment.
+Upload audio of any sample rate along with a plain-text transcript (or standard
+annotation file), and instantly visualize predicted boundaries, the Soft-DP path,
+and download a TextGrid.
 
 ```bash
 conda activate FDNFA
-python demo_app.py
+python app.py
 ```
 
-This will launch a local server (usually at `http://localhost:7860`). To gracefully shut down the server, simply close your browser tab.
+This launches a local server (default `http://localhost:7860`).
 
-**Key Demo Features:**
-- **Zero-shot Plain Text Support:** Provide a plain `.txt` file with your sequence of words or phonemes separated by spaces. The app will align them without needing any prior ground-truth timestamps.
-- **Audio Auto-resampling:** Upload any standard audio file; it will be automatically resampled to the required 16 kHz internally.
-- **Rich Visualizations:** View the latent feature probabilities and the Soft-DP matrix path directly in the browser.
+**Key features:**
+- **Annotation flexibility:** `.phn` (phoneme timestamps), `.wrd` (word timestamps), or `.txt` (plain phoneme/word sequence — no timestamps needed).
+- **Auto checkpoint selection:** Switching the *Language* radio (english / multilingual) automatically picks the matching pretrained checkpoint. You can override the selection or upload your own `.pt`.
+- **Audio auto-resampling:** Any sample rate; resampled to 16 kHz mono internally.
+- **Two output tabs:** *Alignment Data* (audio playback + boundary table + downloadable TextGrid) and *Visualizations* (latent features, Soft-DP matrix, BiLSTM probabilities/logits).
 
 ---
 
@@ -195,15 +218,15 @@ This will launch a local server (usually at `http://localhost:7860`). To gracefu
 
 The main entry point for generating alignments is `generate_textgrids.py`. This script processes your audio and annotations, and outputs standard Praat `.TextGrid` files ready for linguistic analysis (similar to tools like Montreal Forced Aligner).
 
-### Option 1: Single File
+`--ckpt` is optional — if omitted, the bundled TIMIT checkpoint is used for
+`--lang english` and the Buckeye checkpoint for `--lang multilingual`.
 
-Run alignment on a single `.wav` file:
+### Option 1: Single File
 
 ```bash
 conda activate FDNFA
 python generate_textgrids.py \
-  --wav   /path/to/audio.wav \
-  --ckpt  /path/to/checkpoint/12_best_model.pt \
+  --wav  /path/to/audio.wav \
   --mode phoneme \
   --lang english \
   --annotation phn
@@ -211,13 +234,10 @@ python generate_textgrids.py \
 
 ### Option 2: Full Dataset Directory
 
-Run alignment on all `.wav` files inside a directory:
-
 ```bash
 conda activate FDNFA
 python generate_textgrids.py \
   --wav_dir /path/to/dataset/test/ \
-  --ckpt    /path/to/checkpoint/12_best_model.pt \
   --mode    word \
   --lang    english \
   --annotation wrd
@@ -229,28 +249,27 @@ python generate_textgrids.py \
 |------|---------|---------|-------------|
 | `--wav` | file path | — | Path to a single input `.wav` file (16 kHz mono) |
 | `--wav_dir` | directory path | — | Path to a directory containing `.wav` files to process |
-| `--ckpt` | file path | — | Path to trained checkpoint (`.pt`) |
-
-| `--mode` | `phoneme`, `word` | `phoneme` | Alignment granularity. `phoneme` = phoneme-level (default). `word` = word-level alignment (zero-shot, no additional training needed). |
-| `--lang` | `english`, `multilingual` | `english` | Language setting. `english` = default English phoneme alignment (same as training). `multilingual` = any non-English language (zero-shot cross-lingual). |
-| `--annotation` | any string | `phn` | Annotation file extension to look for. Use `txt` for plain text transcripts (no ground-truth timestamps needed), or standard extensions (e.g. `phn`, `wrd`). |
+| `--ckpt` | file path | bundled | Path to a trained checkpoint (`.pt`). Defaults to `pretrained_models/fdnfa_timit_english.pt` (or `fdnfa_buckeye_english.pt` when `--lang multilingual`). |
+| `--mode` | `phoneme`, `word` | `phoneme` | Alignment granularity. `phoneme` = phoneme-level (default). `word` = word-level alignment (zero-shot). |
+| `--lang` | `english`, `multilingual` | `english` | Language setting. `english` = trained English phoneme alignment. `multilingual` = any non-English language (zero-shot cross-lingual). |
+| `--annotation` | any string | `phn` | Annotation file extension to look for. Use `txt` for plain text transcripts, or standard extensions (e.g. `phn`, `wrd`). |
 
 The `.wav` file must have a paired annotation file in the same directory, providing the phoneme or word sequence to align to.
 
 **Examples:**
 
 ```bash
-# English phoneme-level (default)
-python generate_textgrids.py --wav_dir my_dataset/ --ckpt model.pt
+# English phoneme-level (default — uses TIMIT checkpoint)
+python generate_textgrids.py --wav_dir my_dataset/
 
-# English word-level (zero-shot, no additional training)
-python generate_textgrids.py --wav_dir my_dataset/ --ckpt model.pt --mode word --annotation wrd
+# English word-level (zero-shot)
+python generate_textgrids.py --wav_dir my_dataset/ --mode word --annotation wrd
 
-# Any non-English language, phoneme-level (zero-shot cross-lingual)
-python generate_textgrids.py --wav_dir my_dataset/ --ckpt model.pt --lang multilingual --annotation phn
+# Multilingual phoneme-level (zero-shot — uses Buckeye checkpoint)
+python generate_textgrids.py --wav_dir my_dataset/ --lang multilingual --annotation phn
 
-# Zero-shot alignment directly from a plain text transcript (no timestamps needed)
-python generate_textgrids.py --wav_dir my_dataset/ --ckpt model.pt --mode word --annotation txt
+# Plain-text transcript (no timestamps needed)
+python generate_textgrids.py --wav_dir my_dataset/ --mode word --annotation txt
 ```
 
 **Output:**
@@ -268,7 +287,6 @@ Evaluate a checkpoint over a directory of `.wav` files and report precision at m
 conda activate FDNFA
 python test_results.py \
   --wav  /path/to/test/wavs/ \
-  --ckpt /path/to/run/dir/ \
   --mode phoneme \
   --lang english \
   --annotation phn
@@ -279,13 +297,15 @@ python test_results.py \
 | Flag | Choices | Default | Description |
 |------|---------|---------|-------------|
 | `--wav` | directory path | — | Directory containing `.wav` files to evaluate |
-| `--ckpt` | path | — | Checkpoint directory (sweeps `{idx}_best_model.pt`) or a single `.pt` file |
-
+| `--ckpt` | path | bundled | A single `.pt` file or a directory (sweeps `{idx}_best_model.pt`). Defaults to the bundled TIMIT/Buckeye checkpoint matching `--lang`. |
 | `--mode` | `phoneme`, `word` | `phoneme` | Alignment granularity — same meaning as in `predict.py` |
 | `--lang` | `english`, `multilingual` | `english` | Language setting — same meaning as in `predict.py` |
 | `--annotation` | any string | `phn` | Annotation file extension — same meaning as in `predict.py` |
+| `--w-phi` | float | `0.5` | Acoustic ↔ linguistic feature weight |
+| `--out-plot` | file path | — | If set (and sweeping a directory), save a precision-vs-checkpoint plot |
+| `--no-plots` | flag | off | Skip per-file diagnostic plots — much faster on large datasets |
 
-Reports precision at 10, 15, 20, 25, 50, and 100 ms tolerances. Precision plot saved next to the checkpoint.
+Reports precision at 10, 15, 20, 25, 50, and 100 ms tolerances.
 
 ---
 
@@ -293,15 +313,18 @@ Reports precision at 10, 15, 20, 25, 50, and 100 ms tolerances. Precision plot s
 
 FDNFA can align speech in **unseen languages** (Dutch, German, Hebrew, and others) without any additional training. Phonemes from the target language are automatically mapped to the Lee-Hon 39 set used during English training via articulatory feature distance ([PanPhon](https://github.com/dmort27/panphon)).
 
-To use Dutch phoneme annotations (IFA corpus format):
-```bash
-python predict.py \
-  --wav  /path/to/dutch_audio.wav \
-  --ckpt /path/to/checkpoint.pt
-```
-Then set `language = "dutch"` in `predict.py` (`main_predict(..., language="dutch")`).
+Just pass `--lang multilingual` — this both selects the Buckeye-trained
+checkpoint (which generalizes better cross-lingually) and routes the input
+through the G2P/articulatory-mapping pipeline:
 
-For other languages, ensure `.phn` files use any standard phoneme notation — the `dutch_preprocess.aligner_pipeline()` function handles IFA→IPA→LH39 conversion.
+```bash
+python generate_textgrids.py \
+  --wav_dir /path/to/dutch_audio_dir/ \
+  --lang multilingual \
+  --annotation phn
+```
+
+`.phn` / `.wrd` files can use any standard phoneme/word notation — `dutch_preprocess.aligner_pipeline()` handles IFA → IPA → LH39 conversion.
 
 ---
 
@@ -328,7 +351,8 @@ Saves four heatmap plots to `<run_dir>/latent_representations/`:
 
 ```
 FDNFA/
-├── generate_textgrids.py            # Main entry point (MFA-style CLI)
+├── app.py                           # Gradio web demo
+├── generate_textgrids.py            # MFA-style CLI for TextGrid output
 ├── main.py                          # Training entry point
 ├── predict.py                       # Low-level single-file inference
 ├── test_results.py                  # Batch evaluation
@@ -338,6 +362,9 @@ FDNFA/
 ├── utils.py                         # Soft-DP, metrics, phoneme maps
 ├── dutch_preprocess.py              # Cross-lingual phoneme mapping
 ├── visualize_latent_representation.py
+├── pretrained_models/               # Bundled checkpoints (or HF Hub at runtime)
+│   ├── fdnfa_timit_english.pt
+│   └── fdnfa_buckeye_english.pt
 ├── conf/
 │   └── config.yaml                  # All hyperparameters (Hydra)
 ├── scripts/                         # Data preparation & utilities

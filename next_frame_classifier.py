@@ -94,19 +94,7 @@ class NextFrameClassifier(nn.Module):
         torch.cuda.empty_cache()
         
         z = F.normalize(z, dim=-1)
-        
-        # # ---- only in debug mode we can plot z ------
-        # import matplotlib.pyplot as plt
-        # import numpy as np
-        # # Accessing the first element
-        # plt.figure(figsize=(16, 6))
-        # plt.imshow(z[0].detach().cpu().numpy().T, aspect='auto', cmap='viridis')
-        # plt.savefig('/home/rotem/projects/CFA/DCAF2/DCAF2.0/runs/plot_try/z_first.png', dpi=100)
-        # print("Saved to /home/rotem/projects/CFA/DCAF2/DCAF2.0/runs/plot_try/z_first.png")
-        # # --------------------------------------------
-        
-        
-        
+
         z_bilstm, _ = self.bi_lstm(z)
         logits = self.fc(z_bilstm)
         probs = F.softmax(logits, dim=-1)

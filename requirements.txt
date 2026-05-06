@@ -42,3 +42,8 @@ memory-profiler==0.61.0
 
 # ── General utilities ────────────────────────────────────────────────────────
 tqdm==4.62.3
+
+# ── Web demo (HuggingFace Spaces) ────────────────────────────────────────────
+gradio>=4.0.0
+huggingface_hub>=0.20.0
+TextGrid>=1.5

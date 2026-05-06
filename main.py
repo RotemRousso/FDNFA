@@ -12,8 +12,6 @@ from solver import Solver
 import torch.cuda
 from memory_profiler import profile
 
-wandb.init(project="DCAF2.0", name="Run_for_projectGitHub_Hulk", anonymous="never")
-
 def set_cuda_visible_devices(device_ids):
     """
     Sets the CUDA_VISIBLE_DEVICES environment variable to the given device IDs.
@@ -44,6 +42,12 @@ def main(cfg):
     cfg.host = socket.gethostname()
     cfg.project = "default" if not hasattr(cfg, "project") else cfg.project
     cfg = Namespace(**dict(cfg))
+
+    # Initialize Weights & Biases here (rather than at module import) so
+    # importing main.py doesn't trigger a W&B login. Project name is
+    # configurable via the WANDB_PROJECT env var; disable entirely with
+    # WANDB_MODE=disabled.
+    wandb.init(project=os.environ.get("WANDB_PROJECT", "FDNFA"))
     
     set_cuda_visible_devices(cfg.devices)
     device = torch.device("cuda")
