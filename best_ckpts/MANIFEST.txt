@@ -1,0 +1,12 @@
+Best FDNFA checkpoint per case (symlinks; .pt distributed via HF, gitignored).
+Selected on the standard test splits with the corrected test_results.py metric.
+
+  best_for_english_phn.pt       -> TIMIT specialist  (ep57)   TIMIT phoneme @25=83.88
+  best_for_english_wrd.pt       -> TIMIT specialist  (ep57)   TIMIT word    @25=74.73
+  best_for_buckeye_phn.pt       -> Buckeye specialist(ep45)   Buckeye phon  @25=69.93
+  best_for_buckeye_wrd.pt       -> joint TIMIT+Buckeye(b8 ep15) Buckeye word @25=66.10
+  best_for_multilingual_phn.pt  -> joint TIMIT+Buckeye(b8 ep15) Dutch 51.17 / German 49.07 / Hebrew 42.78 @25
+  best_for_multilingual_wrd.pt  -> joint TIMIT+Buckeye(b8 ep15) Dutch 41.85 / German 49.48 / Hebrew 41.95 @25
+
+The joint model is the best multilingual checkpoint across all languages and both levels,
+and is bundled as pretrained_models/fdnfa_joint_multilingual.pt (app multilingual default).

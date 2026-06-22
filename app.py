@@ -2,18 +2,18 @@
 FDNFA web demo — interactive forced alignment in the browser.
 
 Two pretrained checkpoints ship with the repo (under pretrained_models/):
-  - fdnfa_timit_english.pt   — TIMIT-trained, best for English phoneme alignment
-  - fdnfa_buckeye_english.pt — Buckeye-trained (spontaneous English); also the
-                               recommended pick for cross-lingual / multilingual
-                               zero-shot alignment (Dutch, German, Hebrew, ...).
+  - fdnfa_timit_english.pt       — TIMIT-trained, best for English phoneme alignment
+  - fdnfa_joint_multilingual.pt  — joint TIMIT+Buckeye model; best for cross-lingual /
+                                   multilingual zero-shot alignment (Dutch, German,
+                                   Hebrew, ...) at both phoneme and word level.
 
 The app picks one automatically from the `Language` radio (english → TIMIT,
-multilingual → Buckeye); a custom .pt upload overrides both.
+multilingual → joint); a custom .pt upload overrides both.
 
 For HuggingFace Spaces deployment, set Space Secrets:
   HF_MODEL_REPO   — e.g. "YourUsername/FDNFA-weights"
   HF_TOKEN        — only needed for private repos
-The app will download `fdnfa_timit_english.pt` and `fdnfa_buckeye_english.pt`
+The app will download `fdnfa_timit_english.pt` and `fdnfa_joint_multilingual.pt`
 from that repo on first use.
 """
 import os
@@ -36,11 +36,11 @@ PRETRAINED_DIR = os.path.join(SCRIPT_DIR, "pretrained_models")
 
 CKPT_FILES = {
     "english":      "fdnfa_timit_english.pt",
-    "multilingual": "fdnfa_buckeye_english.pt",
+    "multilingual": "fdnfa_joint_multilingual.pt",
 }
 CKPT_LABELS = {
     "english":      "TIMIT (English) — best for English phoneme alignment",
-    "multilingual": "Buckeye (English, spontaneous) — recommended for cross-lingual / multilingual",
+    "multilingual": "Joint TIMIT+Buckeye — best for cross-lingual / multilingual zero-shot",
 }
 
 _ckpt_cache = {}

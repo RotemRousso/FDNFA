@@ -179,12 +179,12 @@ Two checkpoints ship with the repo (under `pretrained_models/`):
 
 | File | Trained on | Best for |
 |------|------------|----------|
-| `fdnfa_timit_english.pt`   | TIMIT (read English)          | English phoneme alignment |
-| `fdnfa_buckeye_english.pt` | Buckeye (spontaneous English) | Spontaneous English; **also the recommended pick for cross-lingual / multilingual zero-shot alignment** (Dutch, German, Hebrew, ...) — its broader acoustic variability generalizes better than TIMIT-only training. |
+| `fdnfa_timit_english.pt`      | TIMIT (read English)            | English phoneme alignment |
+| `fdnfa_joint_multilingual.pt` | Joint TIMIT+Buckeye             | **Best for cross-lingual / multilingual zero-shot alignment** (Dutch, German, Hebrew, ...) at both phoneme and word level — the joint model generalizes better to unseen languages than either single-corpus model. |
 
 The CLI tools (`predict.py`, `generate_textgrids.py`, `test_results.py`) and the
 web demo (`app.py`) all auto-pick the right one from the `--lang` flag — pass
-`--lang english` for the TIMIT checkpoint, `--lang multilingual` for the Buckeye
+`--lang english` for the TIMIT checkpoint, `--lang multilingual` for the joint
 checkpoint. Override with `--ckpt /path/to/your.pt` (or upload one in the demo).
 
 For HuggingFace Spaces deployment, set `HF_MODEL_REPO` (and `HF_TOKEN` if private)
@@ -249,7 +249,7 @@ python generate_textgrids.py \
 |------|---------|---------|-------------|
 | `--wav` | file path | — | Path to a single input `.wav` file (16 kHz mono) |
 | `--wav_dir` | directory path | — | Path to a directory containing `.wav` files to process |
-| `--ckpt` | file path | bundled | Path to a trained checkpoint (`.pt`). Defaults to `pretrained_models/fdnfa_timit_english.pt` (or `fdnfa_buckeye_english.pt` when `--lang multilingual`). |
+| `--ckpt` | file path | bundled | Path to a trained checkpoint (`.pt`). Defaults to `pretrained_models/fdnfa_timit_english.pt` (or `fdnfa_joint_multilingual.pt` when `--lang multilingual`). |
 | `--mode` | `phoneme`, `word` | `phoneme` | Alignment granularity. `phoneme` = phoneme-level (default). `word` = word-level alignment (zero-shot). |
 | `--lang` | `english`, `multilingual` | `english` | Language setting. `english` = trained English phoneme alignment. `multilingual` = any non-English language (zero-shot cross-lingual). |
 | `--annotation` | any string | `phn` | Annotation file extension to look for. Use `txt` for plain text transcripts, or standard extensions (e.g. `phn`, `wrd`). |
@@ -364,7 +364,7 @@ FDNFA/
 ├── visualize_latent_representation.py
 ├── pretrained_models/               # Bundled checkpoints (or HF Hub at runtime)
 │   ├── fdnfa_timit_english.pt
-│   └── fdnfa_buckeye_english.pt
+│   └── fdnfa_joint_multilingual.pt
 ├── conf/
 │   └── config.yaml                  # All hyperparameters (Hydra)
 ├── scripts/                         # Data preparation & utilities
