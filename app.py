@@ -98,7 +98,8 @@ def _internal_language(lang: str, mode: str, ann_ext: str) -> str:
 OUTPUTS_NONE = (None, None, None, None, None, None, None, None)  # 8 None for the non-status outputs
 
 def run_alignment(audio_file, annotation_file, ckpt_upload, mode, lang,
-                  pretrained_choice, w_phi, progress=gr.Progress()):
+                  pretrained_choice, w_phi, g2p_choice="espeak (multilingual)",
+                  voice_choice="en-us", progress=gr.Progress()):
     if not audio_file or not annotation_file:
         return ("Please upload both an audio file and an annotation file.", *OUTPUTS_NONE)
 
@@ -156,6 +157,29 @@ def run_alignment(audio_file, annotation_file, ckpt_upload, mode, lang,
     # Route by ORIGINAL extension (post-rewrite ann_ext is "phn" for txt inputs).
     language = _internal_language(lang, mode, original_ext)
 
+    # Word-level G2P: convert orthographic words -> LH39 phonemes with the chosen
+    # front-end (espeak, or the MFA english_us_arpa G2P used in the paper), then
+    # align via the stock phoneme path. Replaces the legacy letter-by-letter
+    # mapping. Only applies to real word input (.wrd / .txt / .word).
+    app_mapped_ph = None
+    if mode == "word" and original_ext in ("wrd", "txt", "word") and orig_tokens:
+        import word_g2p
+        backend = "mfa" if g2p_choice.startswith("MFA") else "espeak"
+        voice = "en-us" if backend == "mfa" else voice_choice
+        app_mapped_ph = [word_g2p.word_to_lh39(tok, voice=voice, backend=backend)
+                         for tok in orig_tokens]
+        phons = [ph for seq in app_mapped_ph for ph in seq] or ["sil"]
+        # Rewrite the annotation as a dummy uniform-time .phn of LH39 phonemes so
+        # the stock English/phoneme aligner runs on them (no further G2P).
+        ann_ext = "phn"
+        ann_path = os.path.join(workspace, f"{base}.{ann_ext}")
+        audio_len = audio.shape[1]
+        interval = audio_len / max(1, len(phons))
+        with open(ann_path, "w") as f:
+            for i, ph in enumerate(phons):
+                f.write(f"{int(i * interval)} {int((i + 1) * interval)} {ph}\n")
+        language = "english"   # phonemes are already LH39; skip the internal G2P
+
     progress(0.3, desc="Running alignment...")
     try:
         with _inference_lock:
@@ -171,6 +195,12 @@ def run_alignment(audio_file, annotation_file, ckpt_upload, mode, lang,
     except Exception as exc:
         utils.set_dp_matrix_out_dir(None)
         return (f"Inference error: {exc}", *OUTPUTS_NONE)
+
+    # When the app did the word-level G2P itself, use its per-word LH39 phoneme
+    # lists for the two-table / TextGrid word tier (main_predict's English path
+    # returns mapped_ph=None).
+    if app_mapped_ph is not None:
+        mapped_ph = app_mapped_ph
 
     progress(0.8, desc="Building outputs...")
 
@@ -283,6 +313,18 @@ with gr.Blocks(title="FDNFA Forced Aligner", theme=gr.themes.Soft()) as demo:
             ann_in    = gr.File(label="Annotation (.phn / .wrd / .txt)")
             mode_in   = gr.Radio(["phoneme", "word"], value="phoneme", label="Mode")
             lang_in   = gr.Radio(["english", "multilingual"], value="english", label="Language")
+            # Word-level G2P front-end (word mode only). "MFA english_us_arpa" uses
+            # the exact G2P model Montreal Forced Aligner ships for English (paper
+            # comparison); "espeak" is the multilingual, MFA-independent default.
+            g2p_in    = gr.Radio(
+                ["espeak (multilingual)", "MFA english_us_arpa (English)"],
+                value="espeak (multilingual)",
+                label="Word G2P front-end (used only in word mode)",
+            )
+            voice_in  = gr.Dropdown(
+                ["en-us", "en-gb", "nl", "de", "fr", "es", "it", "he", "ru", "pt"],
+                value="en-us", label="espeak voice (word mode, espeak only)",
+            )
             pretrained_in = gr.Radio(
                 choices=PRETRAINED_RADIO_CHOICES,
                 value="english",
@@ -322,7 +364,8 @@ with gr.Blocks(title="FDNFA Forced Aligner", theme=gr.themes.Soft()) as demo:
 
     btn.click(
         fn=run_alignment,
-        inputs=[audio_in, ann_in, ckpt_in, mode_in, lang_in, pretrained_in, wphi_in],
+        inputs=[audio_in, ann_in, ckpt_in, mode_in, lang_in, pretrained_in, wphi_in,
+                g2p_in, voice_in],
         outputs=[status, audio_out, img_bounds, img_dp, img_probs,
                  tg_out, table_phn_out, table_orig_out],
     )

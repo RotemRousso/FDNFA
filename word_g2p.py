@@ -64,8 +64,33 @@ def _espeak_ipa(word, voice):
     return out.strip().translate(_STRIP)
 
 
-def word_to_lh39(word, voice=DEFAULT_VOICE):
-    """Orthographic word -> list of LH39 phonemes (cached)."""
+# Word-level G2P backend: "espeak" (default, multilingual, MFA-independent) or
+# "mfa" (the english_us_arpa Pynini G2P that Montreal Forced Aligner uses — for
+# apples-to-apples English word-level comparison). Override via FDNFA_WORD_G2P.
+G2P_BACKEND = os.environ.get("FDNFA_WORD_G2P", "espeak").lower()
+
+
+def word_to_lh39(word, voice=None, backend=None):
+    """Orthographic word -> list of LH39 phonemes (cached).
+
+    Routes through the espeak or MFA-english_us_arpa G2P. `backend`/`voice`
+    default to the FDNFA_WORD_G2P / FDNFA_G2P_VOICE env vars when not passed, so a
+    long-running process (e.g. the Gradio app) can switch per call by argument.
+    The MFA backend applies to English (it uses the english_us_arpa dictionary).
+    """
+    if backend is None:
+        backend = os.environ.get("FDNFA_WORD_G2P", "espeak").lower()
+    if voice is None:
+        voice = os.environ.get("FDNFA_G2P_VOICE", DEFAULT_VOICE)
+    if backend == "mfa":
+        import mfa_g2p  # lazy: mfa_g2p imports closure helpers from this module
+        return mfa_g2p.word_to_lh39_mfa(word)
+    return _espeak_word_lh39(word, voice)
+
+
+def _espeak_word_lh39(word, voice=DEFAULT_VOICE):
+    """Word -> LH39 via espeak (cached). The espeak branch of word_to_lh39, also
+    used by the MFA backend as the OOV fallback for languages with no MFA G2P."""
     key = (word.lower(), voice)
     if key in _cache:
         return _cache[key]
