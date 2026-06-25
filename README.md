@@ -27,8 +27,9 @@ If you use FALCON in your research, please cite:
 
 - 🎯 **Phoneme-level precision** — operates at ~10 ms frame resolution, the finest granularity among neural forced aligners.
 - 🔁 **Fully differentiable** — a Soft Dynamic Programming decoder enables gradient flow through the entire alignment pipeline.
-- 🌍 **Zero-shot multilingual** — trained on English, generalizes to unseen languages at inference (tested on Dutch, German, and Hebrew can be others too) **without any additional training**.
+- 🌍 **Zero-shot multilingual** — trained on English, generalizes to unseen languages at inference (tested on Dutch, German, and Hebrew, among others) **without any additional training**.
 - 📝 **Word-level generalization** — word boundaries derived from phoneme predictions at test time, competitive with word-level neural aligners.
+
 ---
 
 ## How It Works
@@ -229,12 +230,7 @@ conda activate falcon
 python main.py
 ```
 
-Checkpoints are saved every epoch as `{epoch}_best_model.pt` in the Hydra run directory. Training progress is logged to [Weights & Biases](https://wandb.ai) (project `FALCON`; override with `WANDB_PROJECT`).
-
-To disable W&B logging:
-```bash
-WANDB_MODE=disabled python main.py
-```
+Checkpoints are saved every epoch as `{epoch}_best_model.pt` in the Hydra run directory.
 
 ### Key hyperparameters
 
@@ -243,7 +239,7 @@ WANDB_MODE=disabled python main.py
 | `epochs` | 200 | Total training epochs |
 | `batch_size` | 8 | Per-GPU batch size |
 | `lr` | 3e-4 | Learning rate (AdamW) |
-| `devices` | [7] |
+| `devices` | `[7]` | GPU index(es) to train on |
 | `num_classes` | 39 | Phoneme set size (Lee-Hon 39) |
 | `z_dim` | 256 | CNN encoder output dimension |
 | `z_proj` | 64 | Projection head output dimension |
@@ -252,20 +248,22 @@ WANDB_MODE=disabled python main.py
 
 ## Pretrained Checkpoints
 
-Two checkpoints are used by FALCON (under `pretrained_models/`):
+Three checkpoints are used by FALCON (under `pretrained_models/`):
 
 | File | Trained on | Best for |
 |------|------------|----------|
 | `falcon_timit_english.pt`      | TIMIT (read English)            | English phoneme alignment |
+| `falcon_buckeye_english.pt` | Buckeye (spontaneous English) | Spontaneous / conversational English |
 | `falcon_joint_multilingual.pt` | Joint TIMIT+Buckeye             | **Best for cross-lingual / multilingual zero-shot alignment** (Dutch, German, Hebrew, ...) at both phoneme and word level — the joint model generalizes better to unseen languages than either single-corpus model. |
 
-The CLI tools (`predict.py`, `generate_textgrids.py`, `test_results.py`) and the
-web demo (`app.py`) all auto-pick the right one from the `--lang` flag — pass
-`--lang english` for the TIMIT checkpoint, `--lang multilingual` for the joint
-checkpoint. Override with `--ckpt /path/to/your.pt` (or upload one in the demo).
+The CLI tools (`predict.py`, `generate_textgrids.py`, `test_results.py`) auto-pick a
+checkpoint from the `--lang` flag — `--lang english` → TIMIT, `--lang multilingual`
+→ joint — or pass `--ckpt /path/to/your.pt` to use any other (e.g. the Buckeye
+model). The web demo (`app.py`) exposes all three as selectable options.
 
-For HuggingFace Spaces deployment, set `HF_MODEL_REPO` (and `HF_TOKEN` if private)
-as Space Secrets — `app.py` will download both files from that repo on first use.
+The `.pt` files are not committed to git; place them under `pretrained_models/`, or
+set `HF_MODEL_REPO` (and `HF_TOKEN` if private) so `app.py` / HuggingFace Spaces
+fetch them from that model repo on first use.
 
 ---
 
@@ -407,6 +405,7 @@ Saves four heatmap plots to `<run_dir>/latent_representations/`:
 ```
 FALCON/
 ├── app.py                           # Gradio web demo
+├── falcon_viz.py                    # Time-aligned alignment visualizations (web demo + README)
 ├── generate_textgrids.py            # MFA-style CLI for TextGrid output
 ├── main.py                          # Training entry point
 ├── predict.py                       # Low-level single-file inference
@@ -415,10 +414,13 @@ FALCON/
 ├── next_frame_classifier.py         # Model + loss functions
 ├── dataloader.py                    # Dataset classes
 ├── utils.py                         # Soft-DP, metrics, phoneme maps
-├── dutch_preprocess.py              # Cross-lingual phoneme mapping
+├── dutch_preprocess.py              # Cross-lingual phoneme mapping (IPA → LH39)
+├── word_g2p.py                      # Word-level G2P front-end (espeak / char)
+├── mfa_g2p.py                       # Word-level G2P front-end (MFA-style)
 ├── visualize_latent_representation.py
-├── pretrained_models/               # Bundled checkpoints (or HF Hub at runtime)
+├── pretrained_models/               # Checkpoints (gitignored; via HF Hub at runtime)
 │   ├── falcon_timit_english.pt
+│   ├── falcon_buckeye_english.pt
 │   └── falcon_joint_multilingual.pt
 ├── conf/
 │   └── config.yaml                  # All hyperparameters (Hydra)
@@ -428,8 +430,6 @@ FALCON/
 ```
 
 ---
-
-
 
 ## License
 
