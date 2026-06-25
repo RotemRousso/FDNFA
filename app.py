@@ -19,9 +19,34 @@ from that repo on first use.
 import os
 import re
 import shutil
+import sys
 import tempfile
 import threading
 import time
+
+# panphon 0.21.0 (pinned) ships an invalid-syntax line in featuretable.py — a stray
+# type annotation inside a function call — that breaks `import panphon` on a clean
+# install. Fix it on disk before anything imports panphon. Idempotent: a no-op when
+# panphon is already patched (e.g. local installs).
+def _patch_panphon():
+    import importlib.util
+    spec = importlib.util.find_spec("panphon")
+    locs = getattr(spec, "submodule_search_locations", None) if spec else None
+    if not locs:
+        return
+    ft = os.path.join(list(locs)[0], "featuretable.py")
+    bad = "word_features = self.word_fts(word: str, normalize: bool=True)"
+    good = "word_features = self.word_fts(word, normalize=True)"
+    try:
+        with open(ft) as f:
+            src = f.read()
+        if bad in src:
+            with open(ft, "w") as f:
+                f.write(src.replace(bad, good))
+    except Exception as exc:
+        print(f"[FALCON] panphon patch skipped: {exc}")
+
+_patch_panphon()
 
 import gradio as gr
 import textgrid
@@ -29,6 +54,14 @@ import torchaudio
 
 import utils
 from predict import main_predict
+
+# On HF Spaces, point the "MFA-like" word G2P at the bundled dictionaries / G2P FST
+# and at this interpreter (which has pynini), so it works without a separate MFA
+# aligner conda env. No effect off Spaces — your local MFA install is used as-is.
+if os.environ.get("SPACE_ID"):
+    _SPACE_DIR = os.path.dirname(os.path.abspath(__file__))
+    os.environ.setdefault("MFA_ROOT_DIR", os.path.join(_SPACE_DIR, "mfa_assets"))
+    os.environ.setdefault("FDNFA_MFA_ENV_PY", sys.executable)
 
 # ── Checkpoint configuration ──────────────────────────────────────────────────
 

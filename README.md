@@ -1,6 +1,6 @@
 # FALCON — Forced Alignment through Contrastive Optimization Networks
 
-[![arXiv](https://img.shields.io/badge/arXiv-2606.25460-b31b1b.svg)](https://arxiv.org/abs/2606.25460) [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![arXiv](https://img.shields.io/badge/arXiv-2606.25460-b31b1b.svg)](https://arxiv.org/abs/2606.25460) [![Hugging Face Spaces](https://img.shields.io/badge/Demo-Hugging%20Face%20Spaces-yellow)](https://huggingface.co/spaces/MLSpeech/FALCON) [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **FALCON** (Forced Alignment through Contrastive Optimization Networks) is an end-to-end, fully differentiable neural system for **phoneme-level and word-level (and also multilingual) forced alignment** — given a speech waveform and a known phoneme/words transcript sequence, it predicts precise phoneme boundary timestamps.
 
@@ -107,6 +107,8 @@ python falcon_viz.py
 ---
 
 ## Web Demo (Interactive Inference)
+
+> **▶ Try it live — no install:** **[huggingface.co/spaces/MLSpeech/FALCON](https://huggingface.co/spaces/MLSpeech/FALCON)** (free CPU Space; the first alignment downloads a model).
 
 FALCON includes an interactive Gradio web interface for zero-shot forced alignment.
 Upload audio of any sample rate along with a plain-text transcript (or standard
