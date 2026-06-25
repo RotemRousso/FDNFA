@@ -105,6 +105,40 @@ python falcon_viz.py
 
 ---
 
+## Web Demo (Interactive Inference)
+
+FALCON includes an interactive Gradio web interface for zero-shot forced alignment.
+Upload audio of any sample rate along with a plain-text transcript (or standard
+annotation file), and instantly visualize predicted boundaries, the Soft-DP path,
+and download a TextGrid.
+
+```bash
+conda activate falcon
+python app.py
+```
+
+This launches a local server (default `http://localhost:7860`). Inputs (audio, transcript, options) are on the left; the **Alignment Data** and **Visualizations** tabs are on the right.
+
+![FALCON web demo — alignment data (boundary tables + TextGrid download)](assets/app_screen.jpeg)
+
+![FALCON web demo — time-aligned visualizations](assets/app_screen2.jpeg)
+
+**How to use it** — upload audio (any sample rate; resampled to 16 kHz internally) and a transcript, set the options, and click **Run Alignment**:
+
+| Option | What it does |
+|---|---|
+| **Mode** | `phoneme` — align the phonemes; `word` — align words (boundaries derived from the predicted phonemes). |
+| **Language** | `english` — transcript is already TIMIT-39 phonemes (no G2P); `multilingual` — any other language (runs the G2P path). Auto-selects the matching checkpoint. |
+| **Pretrained checkpoint** | *Read English* (TIMIT), *Spontaneous English* (Buckeye), or *Multilingual* (joint). Follows **Language** by default; override it, or upload your own `.pt`. |
+| **Word G2P** *(word mode)* | *Auto* (recommended — best backend for the language), *espeak*, *MFA-like*, or *none* (romanization — only for languages with no G2P model). If the chosen backend lacks the language it falls back automatically. |
+| **Input language** *(word mode)* | Optional but recommended — lets *Auto* pick the right G2P and set the voice/dictionary behind the scenes. |
+| **Annotation** | `.phn` (phoneme timestamps), `.wrd` (word timestamps), or `.txt` (plain token sequence, no timestamps). |
+| **φ weight** | Acoustic ↔ linguistic balance in the Soft-DP (0.5 default). |
+
+**Outputs:** the **Alignment Data** tab gives the boundary tables and a downloadable Praat `.TextGrid`; the **Visualizations** tab shows the time-aligned panels (waveform · spectrogram · phoneme posteriors · Soft-DP path · contrastive score).
+
+---
+
 ## Clone Repository
 
 > **Note:** the official public release will be hosted at **[github.com/MLSpeech/FALCON](https://github.com/MLSpeech/FALCON)** (as referenced in the paper). This repository (`github.com/RotemRousso/FDNFA`) is the active development version.
@@ -232,40 +266,6 @@ checkpoint. Override with `--ckpt /path/to/your.pt` (or upload one in the demo).
 
 For HuggingFace Spaces deployment, set `HF_MODEL_REPO` (and `HF_TOKEN` if private)
 as Space Secrets — `app.py` will download both files from that repo on first use.
-
----
-
-## Web Demo (Interactive Inference)
-
-FALCON includes an interactive Gradio web interface for zero-shot forced alignment.
-Upload audio of any sample rate along with a plain-text transcript (or standard
-annotation file), and instantly visualize predicted boundaries, the Soft-DP path,
-and download a TextGrid.
-
-```bash
-conda activate falcon
-python app.py
-```
-
-This launches a local server (default `http://localhost:7860`). Inputs (audio, transcript, options) are on the left; the **Alignment Data** and **Visualizations** tabs are on the right.
-
-![FALCON web demo — alignment data (boundary tables + TextGrid download)](assets/app_screen.jpeg)
-
-![FALCON web demo — time-aligned visualizations](assets/app_screen2.jpeg)
-
-**How to use it** — upload audio (any sample rate; resampled to 16 kHz internally) and a transcript, set the options, and click **Run Alignment**:
-
-| Option | What it does |
-|---|---|
-| **Mode** | `phoneme` — align the phonemes; `word` — align words (boundaries derived from the predicted phonemes). |
-| **Language** | `english` — transcript is already TIMIT-39 phonemes (no G2P); `multilingual` — any other language (runs the G2P path). Auto-selects the matching checkpoint. |
-| **Pretrained checkpoint** | *Read English* (TIMIT), *Spontaneous English* (Buckeye), or *Multilingual* (joint). Follows **Language** by default; override it, or upload your own `.pt`. |
-| **Word G2P** *(word mode)* | *Auto* (recommended — best backend for the language), *espeak*, *MFA-like*, or *none* (romanization — only for languages with no G2P model). If the chosen backend lacks the language it falls back automatically. |
-| **Input language** *(word mode)* | Optional but recommended — lets *Auto* pick the right G2P and set the voice/dictionary behind the scenes. |
-| **Annotation** | `.phn` (phoneme timestamps), `.wrd` (word timestamps), or `.txt` (plain token sequence, no timestamps). |
-| **φ weight** | Acoustic ↔ linguistic balance in the Soft-DP (0.5 default). |
-
-**Outputs:** the **Alignment Data** tab gives the boundary tables and a downloadable Praat `.TextGrid`; the **Visualizations** tab shows the time-aligned panels (waveform · spectrogram · phoneme posteriors · Soft-DP path · contrastive score).
 
 ---
 
