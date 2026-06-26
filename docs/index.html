@@ -19,13 +19,15 @@
     font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     -webkit-font-smoothing:antialiased}
   .wrap{max-width:880px;margin:0 auto;padding:0 22px}
-  header{padding:60px 0 34px;text-align:center;border-bottom:1px solid var(--line)}
+  header{padding:58px 0 30px;text-align:center;border-bottom:1px solid var(--line)}
   .logo{font-size:13px;letter-spacing:.22em;color:var(--accent);font-weight:700;text-transform:uppercase}
   h1{font-size:43px;line-height:1.1;margin:.32em 0 .15em;letter-spacing:-.01em}
   .sub{font-size:19px;color:var(--muted);max-width:660px;margin:.4em auto 0}
   .authors{margin:18px 0 4px;font-size:16px}
   .venue{color:var(--muted);font-size:14px}
   .venue a{color:var(--accent);text-decoration:none}
+  .io{font-size:15px;color:var(--muted);max-width:700px;margin:16px auto 0}
+  .io code{background:#eef0f4;padding:1px 6px;border-radius:5px;font-size:13px;color:var(--ink)}
   .btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:26px 0 6px}
   .btn{display:inline-flex;align-items:center;gap:7px;padding:10px 16px;border-radius:9px;
     border:1px solid var(--line);background:var(--soft);color:var(--ink);text-decoration:none;
@@ -46,6 +48,9 @@
   figure.arch{max-width:560px;margin:8px auto 0;background:#fff}
   figure.arch img{padding:14px}
   .cta{text-align:center;background:var(--soft);border:1px solid var(--line);border-radius:14px;padding:30px}
+  .shots{display:flex;gap:14px;justify-content:center;margin-top:22px;flex-wrap:wrap}
+  .shots a{flex:1;min-width:230px;max-width:310px;display:block}
+  .shots img{width:100%;display:block;border:1px solid var(--line);border-radius:8px;background:#fff}
   pre{background:#0f1117;color:#e7e9ee;border-radius:12px;padding:18px 20px;overflow:auto;font-size:13.5px;line-height:1.5}
   footer{padding:36px 0 60px;color:var(--muted);font-size:14px;text-align:center}
   footer a{color:var(--accent);text-decoration:none}
@@ -66,6 +71,7 @@
     <div class="logo">FALCON</div>
     <h1>Fully Differentiable Neural Forced Alignment<br>via Soft Dynamic Programming</h1>
     <p class="sub">Precise phoneme- and word-level boundary timestamps from a waveform and a transcript — trained end-to-end through a differentiable alignment.</p>
+    <p class="io">Give it audio plus a transcript as phonemes (<code>.phn</code>), words (<code>.wrd</code>), or even just plain text (<code>.txt</code>) — FALCON does the rest, returning <em>both</em> phoneme- and word-level alignment and a downloadable Praat <code>.TextGrid</code>.</p>
     <p class="authors">Rotem Rousso &nbsp;·&nbsp; Eyal Cohen &nbsp;·&nbsp; Joseph Keshet</p>
     <p class="venue">Speech, Language &amp; Deep Learning Lab · <a href="https://arxiv.org/abs/2606.25460">arXiv:2606.25460</a></p>
     <div class="btns">
@@ -76,6 +82,23 @@
     </div>
   </div>
 </header>
+
+<section>
+  <div class="wrap">
+    <h2>Watch it align</h2>
+    <p class="note">The cursor sweeps the waveform and each predicted phoneme lights up at its timestamp — it loops on its own. Press <b>Play</b> to hear the audio in sync, or click anywhere on the waveform to seek.</p>
+    <div class="player">
+      <canvas id="wave"></canvas>
+      <div class="pbar">
+        <button id="play" class="btn primary">▶ Play with sound</button>
+        <span id="cur" class="curph">—</span>
+        <span id="tm" class="tm">0.00 / 3.17 s</span>
+      </div>
+      <audio id="aud" preload="auto" src="fasw0sa2.wav"></audio>
+    </div>
+    <p class="note">Utterance: <em>“Don't ask me to carry an oily rag like that.”</em> (TIMIT) — the boundaries shown are FALCON's predicted alignment.</p>
+  </div>
+</section>
 
 <section>
   <div class="wrap">
@@ -92,23 +115,6 @@
     <figure class="arch">
       <img src="https://raw.githubusercontent.com/MLSpeech/FALCON/main/assets/architecture.png" alt="FALCON architecture: spectral and contextual encoders feeding a soft dynamic-programming decoder">
     </figure>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <h2>Watch it align — in real time</h2>
-    <p class="note">Press play: the cursor sweeps the waveform and each predicted phoneme lights up at its timestamp. Click anywhere on the waveform to seek.</p>
-    <div class="player">
-      <canvas id="wave"></canvas>
-      <div class="pbar">
-        <button id="play" class="btn primary">▶ Play</button>
-        <span id="cur" class="curph">—</span>
-        <span id="tm" class="tm">0.00 / 3.17 s</span>
-      </div>
-      <audio id="aud" preload="auto" src="fasw0sa2.wav"></audio>
-    </div>
-    <p class="note">Utterance: <em>“Don't ask me to carry an oily rag like that.”</em> (TIMIT) — the boundaries shown are FALCON's predicted alignment.</p>
   </div>
 </section>
 
@@ -143,6 +149,10 @@
       <h2 style="margin-top:0">Run it in your browser</h2>
       <p>Upload audio + a transcript (<code>.phn</code> / <code>.wrd</code> / <code>.txt</code>), or click a built-in example, and get a boundary table, a Praat <code>.TextGrid</code>, and the time-aligned visualization.</p>
       <a class="btn primary" href="https://huggingface.co/spaces/MLSpeech/FALCON">▶ Open the live demo</a>
+      <div class="shots">
+        <a href="https://huggingface.co/spaces/MLSpeech/FALCON"><img src="https://raw.githubusercontent.com/MLSpeech/FALCON/main/assets/app_screen.jpeg" alt="Demo — boundary tables and downloadable TextGrid"></a>
+        <a href="https://huggingface.co/spaces/MLSpeech/FALCON"><img src="https://raw.githubusercontent.com/MLSpeech/FALCON/main/assets/app_screen2.jpeg" alt="Demo — time-aligned visualizations"></a>
+      </div>
     </div>
   </div>
 </section>
@@ -179,11 +189,13 @@
   const curEl=document.getElementById('cur'), tmEl=document.getElementById('tm');
   const ACC='#4f46e5', GRY='#c7ccd6', GRYd='#9aa0ad', HL='rgba(79,70,229,.10)';
   let W=0,H=0; const DPR=Math.max(1,window.devicePixelRatio||1);
+  let vt=0, last=null;                                  // virtual clock for auto-loop
   function resize(){ W=cv.clientWidth; H=cv.clientHeight||200; cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); draw(); }
+  function curTime(){ return aud.paused ? vt : (aud.currentTime||0); }
   function X(t){ return t/D.duration*W; }
   function activeSeg(t){ for(const s of D.segs){ if(t>=s[0]&&t<s[1]) return s; } return null; }
   function draw(){
-    const t=aud.currentTime||0, mid=H*0.46, amp=H*0.40, a=activeSeg(t), px=X(t);
+    const t=curTime(), mid=H*0.46, amp=H*0.40, a=activeSeg(t), px=X(t);
     ctx.clearRect(0,0,W,H);
     if(a){ ctx.fillStyle=HL; ctx.fillRect(X(a[0]),0,X(a[1])-X(a[0]),H); }
     const n=D.env.length, bw=W/n;
@@ -195,18 +207,23 @@
       if(w>13 && s[2]!=='h#'){ ctx.fillStyle=(a&&a===s)?ACC:GRYd; ctx.fillText(s[2], bx+w/2, H-6); } }
     ctx.strokeStyle=ACC; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(px,0); ctx.lineTo(px,H*0.84); ctx.stroke(); ctx.lineWidth=1;
   }
-  function text(){ const t=aud.currentTime||0, a=activeSeg(t);
+  function text(){ const t=curTime(), a=activeSeg(t);
     curEl.textContent=a?a[2]:'—'; tmEl.textContent=t.toFixed(2)+' / '+D.duration.toFixed(2)+' s'; }
-  let raf=0; function loop(){ draw(); text(); if(!aud.paused) raf=requestAnimationFrame(loop); }
+  function frame(ts){
+    if(aud.paused){ if(last===null) last=ts; vt += (ts-last)/1000; last=ts; if(vt>=D.duration) vt=0; }
+    else { last=null; }
+    draw(); text(); requestAnimationFrame(frame);
+  }
   playBtn.onclick=()=>{ aud.paused?aud.play():aud.pause(); };
-  aud.onplay=()=>{ playBtn.textContent='❚❚ Pause'; cancelAnimationFrame(raf); loop(); };
-  aud.onpause=()=>{ playBtn.textContent='▶ Play'; draw(); text(); };
-  aud.onended=()=>{ playBtn.textContent='▶ Play'; };
-  aud.ontimeupdate=()=>{ if(aud.paused){ draw(); text(); } };
-  cv.onclick=(e)=>{ const r=cv.getBoundingClientRect(); aud.currentTime=Math.min(D.duration,Math.max(0,(e.clientX-r.left)/r.width*D.duration)); draw(); text(); };
+  aud.onplay=()=>{ playBtn.textContent='❚❚ Pause'; };
+  aud.onpause=()=>{ playBtn.textContent='▶ Play with sound'; vt=aud.currentTime||0; last=null; };
+  aud.onended=()=>{ playBtn.textContent='▶ Play with sound'; vt=0; last=null; };
+  cv.onclick=(e)=>{ const r=cv.getBoundingClientRect(), t=Math.min(D.duration,Math.max(0,(e.clientX-r.left)/r.width*D.duration));
+    if(aud.paused){ vt=t; } else { aud.currentTime=t; } };
   aud.addEventListener('loadedmetadata',()=>{ if(aud.duration&&isFinite(aud.duration)) D.duration=aud.duration; resize(); });
   window.addEventListener('resize',resize);
   if(document.readyState!=='loading') resize(); else window.addEventListener('DOMContentLoaded',resize);
+  requestAnimationFrame(frame);
 })();
 </script>
 </body>
