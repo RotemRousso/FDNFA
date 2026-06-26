@@ -4,10 +4,6 @@
 
 **FALCON** (Forced Alignment through Contrastive Optimization Networks) is an end-to-end, fully differentiable neural system for **phoneme-level and word-level (and also multilingual) forced alignment** — given a speech waveform and a known phoneme/words transcript sequence, it predicts precise phoneme boundary timestamps.
 
-<p align="center">
-  <img src="assets/architecture.png" alt="FALCON architecture — spectral and contextual encoders feeding a differentiable soft dynamic-programming decoder" width="560">
-</p>
-
 > Rotem Rousso, Eyal Cohen, Joseph Keshet  
 > *"Fully Differentiable Neural Forced Alignment via Soft Dynamic Programming"*  
 > Preprint, 2026 — [arXiv:2606.25460](https://arxiv.org/abs/2606.25460)
