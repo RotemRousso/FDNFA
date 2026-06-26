@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FALCON — Fully Differentiable Neural Forced Alignment</title>
+<meta name="description" content="FALCON: a fully differentiable neural forced aligner that predicts precise phoneme- and word-level boundary timestamps via a Soft Dynamic Programming decoder.">
+<meta property="og:title" content="FALCON — Neural Forced Alignment via Soft Dynamic Programming">
+<meta property="og:description" content="Precise phoneme- and word-level alignment from a waveform + transcript. Try the live demo.">
+<meta property="og:image" content="https://raw.githubusercontent.com/MLSpeech/FALCON/main/assets/example_english.png">
+<style>
+  :root{
+    --ink:#16181d; --muted:#5b6270; --line:#e6e8ec; --bg:#ffffff; --soft:#f6f7f9;
+    --accent:#4f46e5; --accent-d:#3f37c9;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:880px;margin:0 auto;padding:0 22px}
+  header{padding:64px 0 36px;text-align:center;border-bottom:1px solid var(--line)}
+  .logo{font-size:13px;letter-spacing:.22em;color:var(--accent);font-weight:700;text-transform:uppercase}
+  h1{font-size:44px;line-height:1.1;margin:.35em 0 .15em;letter-spacing:-.01em}
+  .sub{font-size:19px;color:var(--muted);max-width:660px;margin:.4em auto 0}
+  .authors{margin:18px 0 4px;color:var(--ink);font-size:16px}
+  .venue{color:var(--muted);font-size:14px}
+  .btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:26px 0 6px}
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:10px 16px;border-radius:9px;
+    border:1px solid var(--line);background:var(--soft);color:var(--ink);text-decoration:none;
+    font-weight:600;font-size:14.5px;transition:.15s}
+  .btn:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{background:var(--accent-d);border-color:var(--accent-d);color:#fff}
+  section{padding:46px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:24px;margin:0 0 16px}
+  p{color:#2a2d34}
+  .lead{font-size:17.5px}
+  code,kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:6px}
+  figure{margin:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--soft)}
+  figure img{display:block;width:100%;height:auto}
+  figcaption{padding:10px 14px;font-size:13.5px;color:var(--muted)}
+  figcaption b{color:var(--ink)}
+  .cta{text-align:center;background:var(--soft);border:1px solid var(--line);border-radius:14px;padding:30px}
+  pre{background:#0f1117;color:#e7e9ee;border-radius:12px;padding:18px 20px;overflow:auto;font-size:13.5px;line-height:1.5}
+  footer{padding:36px 0 60px;color:var(--muted);font-size:14px;text-align:center}
+  footer a{color:var(--accent);text-decoration:none}
+  .note{font-size:13.5px;color:var(--muted)}
+  @media(max-width:640px){h1{font-size:34px}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="logo">FALCON</div>
+    <h1>Fully Differentiable Neural Forced Alignment<br>via Soft Dynamic Programming</h1>
+    <p class="sub">Precise phoneme- and word-level boundary timestamps from a waveform and a transcript — trained end-to-end through a differentiable alignment.</p>
+    <!-- TODO: replace with the final author list as it appears in the paper -->
+    <p class="authors">Rotem Rousso &nbsp;·&nbsp; … &nbsp;·&nbsp; Joseph Keshet</p>
+    <p class="venue">Speech, Language &amp; Deep Learning Lab · arXiv:2606.25460</p>
+    <div class="btns">
+      <a class="btn primary" href="https://huggingface.co/spaces/MLSpeech/FALCON">▶ Try the live demo</a>
+      <a class="btn" href="https://arxiv.org/abs/2606.25460">📄 Paper</a>
+      <a class="btn" href="https://github.com/MLSpeech/FALCON">💻 Code</a>
+      <a class="btn" href="https://huggingface.co/MLSpeech/FALCON-weights">⬇ Weights</a>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>Overview</h2>
+    <p class="lead"><strong>FALCON</strong> (Forced Alignment through Contrastive Optimization Networks) is a fully differentiable neural forced aligner. A convolutional acoustic encoder, a bidirectional-LSTM phoneme classifier, and a <strong>Soft Dynamic&nbsp;Programming</strong> decoder are trained jointly, so gradients flow through the entire alignment.</p>
+    <p>The encoder is trained with a margin-based contrastive loss whose hard negatives are sampled at phoneme boundaries; a learnable weight balances acoustic boundary sharpness against phoneme-posterior consistency inside the Soft-DP decoder. The result is precise phoneme- and word-level timestamps that are competitive with or surpass <em>MFA</em>, <em>MMS</em>, and <em>WhisperX</em> on read (TIMIT) and spontaneous (Buckeye) English — and generalize <strong>zero-shot</strong> to unseen languages by mapping any phoneme inventory into a shared 39-phone space via articulatory-feature distances.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Example alignments</h2>
+    <p class="note">Each panel is the demo's own output — waveform · spectrogram · phoneme posteriors · Soft-DP path · contrastive score — on a real test utterance.</p>
+    <div class="grid">
+      <figure>
+        <img src="https://raw.githubusercontent.com/MLSpeech/FALCON/main/assets/example_english.png" alt="English alignment">
+        <figcaption><b>English — TIMIT</b> · read speech, phoneme-level.</figcaption>
+      </figure>
+      <figure>
+        <img src="https://raw.githubusercontent.com/MLSpeech/FALCON/main/assets/example_dutch.png" alt="Dutch alignment">
+        <figcaption><b>Dutch — IFA</b> · zero-shot cross-lingual, phoneme-level.</figcaption>
+      </figure>
+      <figure>
+        <img src="https://raw.githubusercontent.com/MLSpeech/FALCON/main/assets/example_german.png" alt="German alignment">
+        <figcaption><b>German — PHONDAT</b> · zero-shot, phoneme-level.</figcaption>
+      </figure>
+      <figure>
+        <img src="https://raw.githubusercontent.com/MLSpeech/FALCON/main/assets/example_hebrew.png" alt="Hebrew alignment">
+        <figcaption><b>Hebrew</b> · zero-shot, word-level, romanized (no G2P model).</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="cta">
+      <h2 style="margin-top:0">Run it in your browser</h2>
+      <p>Upload audio + a transcript (<code>.phn</code> / <code>.wrd</code> / <code>.txt</code>), or click a built-in example, and get a boundary table, a Praat <code>.TextGrid</code>, and the time-aligned visualization.</p>
+      <a class="btn primary" href="https://huggingface.co/spaces/MLSpeech/FALCON">▶ Open the live demo</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Citation</h2>
+    <pre>@article{falcon2026,
+  title   = {Fully Differentiable Neural Forced Alignment via Soft Dynamic Programming},
+  author  = {Rousso, Rotem and others},
+  journal = {arXiv preprint arXiv:2606.25460},
+  year    = {2026},
+  url     = {https://arxiv.org/abs/2606.25460}
+}</pre>
+    <p class="note">Update the <code>author</code> field to the final author list before sharing.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <a href="https://huggingface.co/spaces/MLSpeech/FALCON">Demo</a> ·
+    <a href="https://github.com/MLSpeech/FALCON">Code</a> ·
+    <a href="https://arxiv.org/abs/2606.25460">Paper</a> ·
+    <a href="https://huggingface.co/MLSpeech/FALCON-weights">Weights</a>
+    <p style="margin-top:14px">Released under the MIT License. Example clips are for demonstration only and remain subject to each source corpus's original license.</p>
+  </div>
+</footer>
+</body>
+</html>
