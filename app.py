@@ -503,6 +503,21 @@ with gr.Blocks(title="FALCON Forced Aligner", theme=gr.themes.Soft()) as demo:
                         show_download_button=True,
                     )
 
+    gr.Markdown("### Examples — click one to load it, then press **Run Alignment**")
+    gr.Examples(
+        examples=[
+            ["assets/fasw0sa2.wav", "assets/fasw0sa2.phn", "phoneme",
+             "english", "english", "Auto (recommended)", "English (default)"],
+            ["assets/examples/dutch_M40K1FS28A.wav", "assets/examples/dutch_M40K1FS28A.phn",
+             "phoneme", "multilingual", "multilingual", "Auto (recommended)", "Dutch"],
+            ["assets/examples/hebrew_phoneticlab_clip.wav", "assets/examples/hebrew_phoneticlab_clip.wrd",
+             "word", "multilingual", "multilingual",
+             "none — romanization (not recommended; only for languages with no G2P model)", "Hebrew"],
+        ],
+        inputs=[audio_in, ann_in, mode_in, lang_in, pretrained_in, g2p_in, lang_g2p_in],
+        label="English · TIMIT  |  Dutch · IFA  |  Hebrew · romanized (word-level)",
+    )
+
     # Auto-flip the pretrained-checkpoint radio when the user changes language.
     lang_in.change(fn=lambda v: v, inputs=lang_in, outputs=pretrained_in)
 
