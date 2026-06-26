@@ -136,7 +136,6 @@ This launches a local server (default `http://localhost:7860`). Inputs (audio, t
 | **Word G2P** *(word mode)* | *Auto* (recommended — best backend for the language), *espeak*, *MFA-like*, or *none* (romanization — only for languages with no G2P model). If the chosen backend lacks the language it falls back automatically. |
 | **Input language** *(word mode)* | Optional but recommended — lets *Auto* pick the right G2P and set the voice/dictionary behind the scenes. |
 | **Annotation** | `.phn` (phoneme timestamps), `.wrd` (word timestamps), or `.txt` (plain token sequence, no timestamps). |
-| **φ weight** | Acoustic ↔ linguistic balance in the Soft-DP (0.5 default). |
 
 **Outputs:** the **Alignment Data** tab gives the boundary tables and a downloadable Praat `.TextGrid`; the **Visualizations** tab shows the time-aligned panels (waveform · spectrogram · phoneme posteriors · Soft-DP path · contrastive score).
 
@@ -430,6 +429,44 @@ FALCON/
 ├── assets/                          # README screenshots & example figures
 ├── requirements.txt
 ```
+
+---
+
+## Example Alignments
+
+Each panel below is the demo's own output — waveform · log-mel spectrogram ·
+phoneme posteriors · Soft-DP cost matrix with the optimal path · contrastive
+boundary score — on a real test utterance. The bundled inputs live in
+[`assets/examples/`](assets/examples) (English is `assets/fasw0sa2.*`), so you
+can drop them straight into the web demo or the CLI.
+
+**English — TIMIT** (read speech, phoneme-level)
+
+![English example](assets/example_english.png)
+
+*"Don't ask me to carry an oily rag like that." — 91% of boundaries within 25 ms on this utterance.*
+
+**Dutch — IFA corpus** (zero-shot cross-lingual, phoneme-level)
+
+![Dutch example](assets/example_dutch.png)
+
+*The English-trained model aligns Dutch phonemes zero-shot via articulatory-feature mapping — 60% @25 ms, 93% @100 ms on this utterance.*
+
+**German — PHONDAT** (zero-shot cross-lingual, phoneme-level)
+
+![German example](assets/example_german.png)
+
+*Zero-shot German alignment. Figure only — PHONDAT is licensed by BAS and is not redistributed here; bring your own copy to reproduce.*
+
+**Hebrew** (zero-shot, word-level, no G2P model)
+
+![Hebrew example](assets/example_hebrew.png)
+
+*A romanized Hebrew transcript mapped directly to phonemes by articulatory distance — no grapheme-to-phoneme model required.*
+
+> Example audio is bundled for demonstration only and remains subject to each
+> corpus's original license — see [`assets/examples/NOTICE`](assets/examples/NOTICE).
+> Full-test-set benchmark numbers are in the paper.
 
 ---
 

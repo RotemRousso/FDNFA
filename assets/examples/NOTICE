@@ -1,0 +1,27 @@
+FALCON demo — example audio credits and licenses
+=================================================
+
+The example utterances bundled in this repository are included solely to
+demonstrate the aligner. Each clip remains subject to the original license of
+the corpus it comes from; inclusion here does not grant any additional rights.
+
+English — assets/fasw0sa2.{wav,phn,wrd,txt}
+    TIMIT Acoustic-Phonetic Continuous Speech Corpus (DARPA / NIST / LDC).
+    A single sentence, included for demonstration. TIMIT is distributed under
+    the LDC license; obtain your own copy for any further use.
+
+Dutch — assets/examples/dutch_M40K1FS28A.{wav,phn}
+    IFA Spoken Language Corpus (R.J.J.H. van Son et al., Institute of Phonetic
+    Sciences, University of Amsterdam). Released under the GNU GPL v2 or later
+    ("free as in speech").
+    http://www.fon.hum.uva.nl/IFA-SpokenLanguageCorpora/IFAcorpus/
+
+Hebrew — assets/examples/hebrew_phoneticlab_clip.{wav,wrd}
+    Hebrew read-speech recording; word/phoneme annotations by the Speech,
+    Language and Deep Learning Lab. A short clipped excerpt, included for
+    demonstration and subject to its original license.
+
+German — figure only (assets/example_german.png)
+    PHONDAT, licensed by the Bavarian Archive for Speech Signals (BAS). The
+    audio is NOT redistributed here; only the rendered alignment figure is
+    shown. Obtain PHONDAT from BAS to reproduce this example.
