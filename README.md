@@ -114,7 +114,7 @@ target English corpus; **joint** = a single model jointly trained on TIMIT+Bucke
 Multilingual results are **zero-shot** — no target-language training data. Accuracy
 is the percentage of reference boundaries matched within the given ms tolerance.
 
-**Phone-level alignment accuracy [%] — English (MFA vs. FALCON)**
+**Phone-level Alignment Accuracy [%]: MFA vs. FALCON (Ours)**
 
 | Dataset | Model | t≤10 | t≤25 | t≤50 | t≤100 |
 |---|---|---|---|---|---|
@@ -125,7 +125,7 @@ is the percentage of reference boundaries matched within the given ms tolerance.
 | Buckeye | FALCON specialist | 29.69 | **69.93** | **90.07** | **97.40** |
 | Buckeye | FALCON joint | 28.87 | 69.40 | 89.53 | 97.13 |
 
-**Phoneme-level — unseen multilingual generalization (zero-shot) [%]**
+**Phoneme-Level: Unseen Multilingual Generalization Accuracy**
 
 | Test set | Model | ≤10 | ≤15 | ≤20 | ≤25 | ≤50 | ≤100 |
 |---|---|---|---|---|---|---|---|
@@ -138,7 +138,7 @@ is the percentage of reference boundaries matched within the given ms tolerance.
 | Hebrew | **FALCON joint** | **21.98** | **30.10** | **36.91** | **42.78** | **63.07** | **80.41** |
 | Hebrew | FALCON specialist | 21.03 | 27.78 | 34.30 | 39.79 | 59.38 | 77.76 |
 
-**Word-level alignment accuracy [%] — English**
+**Word-Level Alignment Accuracy [%]: Comparative Analysis**
 
 | Dataset | Model | t≤10 | t≤25 | t≤50 | t≤100 |
 |---|---|---|---|---|---|
@@ -155,7 +155,7 @@ is the percentage of reference boundaries matched within the given ms tolerance.
 | Buckeye | WhisperX | 18.80 | 43.10 | 67.40 | 77.40 |
 | Buckeye | Nvidia-Canary-1b | 8.06 | 18.83 | 36.31 | 63.29 |
 
-**Word-level — unseen multilingual generalization (zero-shot) [%]**
+**Word-Level: Unseen Multilingual Generalization Accuracy**
 
 | Dataset | Model | t≤10 | t≤25 | t≤50 | t≤100 |
 |---|---|---|---|---|---|
