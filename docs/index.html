@@ -55,6 +55,18 @@
   footer{padding:36px 0 60px;color:var(--muted);font-size:14px;text-align:center}
   footer a{color:var(--accent);text-decoration:none}
   .note{font-size:13.5px;color:var(--muted)}
+  /* results tables */
+  .tbl{margin:0 0 26px}
+  .tbl h3{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .tscroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+  table.res{border-collapse:collapse;width:100%;font-size:13.5px}
+  table.res th,table.res td{padding:7px 12px;text-align:center;white-space:nowrap}
+  table.res thead th{background:var(--soft);color:var(--muted);font-weight:600;border-bottom:1px solid var(--line)}
+  table.res td:first-child,table.res td:nth-child(2),
+  table.res th:first-child,table.res th:nth-child(2){text-align:left}
+  table.res tbody tr+tr td{border-top:1px solid var(--line)}
+  table.res td b{color:var(--accent)}
+  table.res .grp{font-weight:600;color:var(--ink)}
   /* alignment player */
   .player{border:1px solid var(--line);border-radius:14px;background:var(--soft);padding:16px 16px 12px}
   #wave{width:100%;height:200px;display:block;border-radius:8px;background:#fff;border:1px solid var(--line);cursor:pointer}
@@ -75,10 +87,10 @@
     <p class="authors">Rotem Rousso &nbsp;·&nbsp; Eyal Cohen &nbsp;·&nbsp; Joseph Keshet</p>
     <p class="venue">Speech, Language &amp; Deep Learning Lab · <a href="https://arxiv.org/abs/2606.25460">arXiv:2606.25460</a></p>
     <div class="btns">
-      <a class="btn primary" href="https://arxiv.org/abs/2606.25460">📄 Read the paper</a>
-      <a class="btn" href="https://huggingface.co/spaces/MLSpeech/FALCON">▶ Live demo</a>
-      <a class="btn" href="https://github.com/MLSpeech/FALCON">💻 Code</a>
-      <a class="btn" href="https://huggingface.co/MLSpeech/FALCON-weights">⬇ Weights</a>
+      <a class="btn primary" href="https://arxiv.org/abs/2606.25460">Read the paper</a>
+      <a class="btn" href="https://huggingface.co/spaces/MLSpeech/FALCON">Live demo</a>
+      <a class="btn" href="https://github.com/MLSpeech/FALCON">Code</a>
+      <a class="btn" href="https://huggingface.co/MLSpeech/FALCON-weights">Weights</a>
     </div>
   </div>
 </header>
@@ -90,7 +102,7 @@
     <div class="player">
       <canvas id="wave"></canvas>
       <div class="pbar">
-        <button id="play" class="btn primary">▶ Play with sound</button>
+        <button id="play" class="btn primary">Play with sound</button>
         <span id="cur" class="curph">—</span>
         <span id="tm" class="tm">0.00 / 3.17 s</span>
       </div>
@@ -120,26 +132,97 @@
 
 <section>
   <div class="wrap">
-    <h2>Example alignments</h2>
-    <p class="note">Each panel is the demo's own output — waveform · spectrogram · phoneme posteriors · Soft-DP path · contrastive score — on a real test utterance.</p>
-    <div class="grid">
-      <figure>
-        <img src="https://raw.githubusercontent.com/MLSpeech/FALCON/main/assets/example_english.png" alt="English alignment">
-        <figcaption><b>English — TIMIT</b> · read speech, phoneme-level.</figcaption>
-      </figure>
-      <figure>
-        <img src="https://raw.githubusercontent.com/MLSpeech/FALCON/main/assets/example_dutch.png" alt="Dutch alignment">
-        <figcaption><b>Dutch — IFA</b> · zero-shot cross-lingual, phoneme-level.</figcaption>
-      </figure>
-      <figure>
-        <img src="https://raw.githubusercontent.com/MLSpeech/FALCON/main/assets/example_german.png" alt="German alignment">
-        <figcaption><b>German — PHONDAT</b> · zero-shot, phoneme-level.</figcaption>
-      </figure>
-      <figure>
-        <img src="https://raw.githubusercontent.com/MLSpeech/FALCON/main/assets/example_hebrew.png" alt="Hebrew alignment">
-        <figcaption><b>Hebrew</b> · zero-shot, word-level, romanized (no G2P model).</figcaption>
-      </figure>
+    <h2>Results</h2>
+    <p class="note">From the paper (arXiv:2606.25460). <b>Specialist</b> = trained on the target English corpus; <b>joint</b> = one model jointly trained on TIMIT+Buckeye. Multilingual results are <b>zero-shot</b> — no target-language training data. Accuracy = % of reference boundaries matched within the ms tolerance; <b style="color:var(--accent)">accent</b> marks the best in each column-block.</p>
+
+    <div class="tbl">
+      <h3>Phone-level alignment accuracy [%] — English</h3>
+      <div class="tscroll">
+        <table class="res">
+          <thead><tr><th>Dataset</th><th>Model</th><th>t≤10</th><th>t≤25</th><th>t≤50</th><th>t≤100</th></tr></thead>
+          <tbody>
+            <tr><td class="grp" rowspan="3">TIMIT</td><td>MFA</td><td><b>38.6</b></td><td>72.3</td><td>81.1</td><td>84.6</td></tr>
+            <tr><td>FALCON specialist</td><td>37.66</td><td><b>83.88</b></td><td><b>94.85</b></td><td><b>98.62</b></td></tr>
+            <tr><td>FALCON joint</td><td>34.70</td><td>82.62</td><td>94.91</td><td>98.60</td></tr>
+            <tr><td class="grp" rowspan="3">Buckeye</td><td>MFA</td><td><b>35.3</b></td><td>60.6</td><td>68.9</td><td>72.7</td></tr>
+            <tr><td>FALCON specialist</td><td>29.69</td><td><b>69.93</b></td><td><b>90.07</b></td><td><b>97.40</b></td></tr>
+            <tr><td>FALCON joint</td><td>28.87</td><td>69.40</td><td>89.53</td><td>97.13</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
+
+    <div class="tbl">
+      <h3>Phoneme-level — unseen multilingual generalization (zero-shot) [%]</h3>
+      <div class="tscroll">
+        <table class="res">
+          <thead><tr><th>Test set</th><th>Model</th><th>≤10</th><th>≤15</th><th>≤20</th><th>≤25</th><th>≤50</th><th>≤100</th></tr></thead>
+          <tbody>
+            <tr><td class="grp" rowspan="3">Dutch — IFA</td><td>FALCON joint</td><td><b>26.85</b></td><td><b>36.16</b></td><td><b>44.56</b></td><td><b>51.17</b></td><td><b>69.94</b></td><td><b>84.11</b></td></tr>
+            <tr><td>FALCON specialist</td><td>26.86</td><td>35.79</td><td>43.85</td><td>50.34</td><td>68.68</td><td>83.22</td></tr>
+            <tr><td>MFA</td><td>11.01</td><td>14.70</td><td>19.05</td><td>21.80</td><td>33.90</td><td>51.02</td></tr>
+            <tr><td class="grp" rowspan="3">German — PHONDAT</td><td>FALCON joint</td><td><b>25.63</b></td><td><b>34.12</b></td><td><b>41.87</b></td><td><b>49.07</b></td><td><b>70.04</b></td><td><b>84.58</b></td></tr>
+            <tr><td>FALCON specialist</td><td>25.08</td><td>33.37</td><td>40.76</td><td>47.43</td><td>68.27</td><td>82.44</td></tr>
+            <tr><td>MFA</td><td>20.60</td><td>31.75</td><td>37.17</td><td>45.83</td><td>66.78</td><td>79.19</td></tr>
+            <tr><td class="grp" rowspan="2">Hebrew</td><td>FALCON joint</td><td><b>21.98</b></td><td><b>30.10</b></td><td><b>36.91</b></td><td><b>42.78</b></td><td><b>63.07</b></td><td><b>80.41</b></td></tr>
+            <tr><td>FALCON specialist</td><td>21.03</td><td>27.78</td><td>34.30</td><td>39.79</td><td>59.38</td><td>77.76</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tbl">
+      <h3>Word-level alignment accuracy [%] — English</h3>
+      <div class="tscroll">
+        <table class="res">
+          <thead><tr><th>Dataset</th><th>Model</th><th>t≤10</th><th>t≤25</th><th>t≤50</th><th>t≤100</th></tr></thead>
+          <tbody>
+            <tr><td class="grp" rowspan="6">TIMIT</td><td>FALCON spec (MFA-G2P)</td><td>49.22</td><td><b>81.79</b></td><td><b>93.04</b></td><td>98.37</td></tr>
+            <tr><td>FALCON joint (MFA-G2P)</td><td><b>49.50</b></td><td>80.60</td><td>92.86</td><td><b>98.46</b></td></tr>
+            <tr><td>MFA</td><td>41.60</td><td>72.80</td><td>89.40</td><td>97.40</td></tr>
+            <tr><td>MMS</td><td>18.60</td><td>43.50</td><td>75.70</td><td>94.70</td></tr>
+            <tr><td>WhisperX</td><td>22.40</td><td>52.70</td><td>82.40</td><td>94.20</td></tr>
+            <tr><td>Nvidia-Canary-1b</td><td>9.23</td><td>23.11</td><td>44.23</td><td>72.81</td></tr>
+            <tr><td class="grp" rowspan="6">Buckeye</td><td>FALCON spec (MFA-G2P)</td><td>50.06</td><td>77.85</td><td><b>91.51</b></td><td><b>96.63</b></td></tr>
+            <tr><td>FALCON joint (MFA-G2P)</td><td><b>50.42</b></td><td><b>77.98</b></td><td>91.01</td><td>96.55</td></tr>
+            <tr><td>MFA</td><td>39.80</td><td>69.90</td><td>84.90</td><td>91.80</td></tr>
+            <tr><td>MMS</td><td>25.00</td><td>52.70</td><td>75.00</td><td>87.90</td></tr>
+            <tr><td>WhisperX</td><td>18.80</td><td>43.10</td><td>67.40</td><td>77.40</td></tr>
+            <tr><td>Nvidia-Canary-1b</td><td>8.06</td><td>18.83</td><td>36.31</td><td>63.29</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tbl">
+      <h3>Word-level — unseen multilingual generalization (zero-shot) [%]</h3>
+      <div class="tscroll">
+        <table class="res">
+          <thead><tr><th>Dataset</th><th>Model</th><th>t≤10</th><th>t≤25</th><th>t≤50</th><th>t≤100</th></tr></thead>
+          <tbody>
+            <tr><td class="grp" rowspan="3">German — PHONDAT</td><td>FALCON (MFA-G2P)</td><td><b>44.20</b></td><td><b>68.48</b></td><td><b>86.12</b></td><td><b>95.11</b></td></tr>
+            <tr><td>MFA</td><td>29.9</td><td>65.4</td><td>82.1</td><td>94.3</td></tr>
+            <tr><td>MMS</td><td>21.8</td><td>44.3</td><td>74.9</td><td>91.8</td></tr>
+            <tr><td class="grp" rowspan="3">Dutch — IFA</td><td>FALCON (MFA-G2P)</td><td><b>26.38</b></td><td><b>45.15</b></td><td>61.16</td><td>76.49</td></tr>
+            <tr><td>MFA</td><td>4.7</td><td>7.3</td><td>11.6</td><td>19.0</td></tr>
+            <tr><td>MMS</td><td>16.0</td><td>37.9</td><td><b>62.9</b></td><td><b>76.6</b></td></tr>
+            <tr><td class="grp" rowspan="2">Hebrew</td><td>FALCON</td><td><b>31.91</b></td><td><b>56.72</b></td><td>75.18</td><td>87.89</td></tr>
+            <tr><td>MMS</td><td>14.3</td><td>41.3</td><td><b>76.5</b></td><td><b>94.7</b></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Example alignment</h2>
+    <p class="note">The panel is the demo's own output — waveform · spectrogram · phoneme posteriors · Soft-DP path · contrastive score — on a real TIMIT test utterance.</p>
+    <figure>
+      <img src="https://raw.githubusercontent.com/MLSpeech/FALCON/main/assets/example_english.png" alt="English alignment">
+      <figcaption><b>English — TIMIT</b> · read speech, phoneme-level · <em>“Don't ask me to carry an oily rag like that.”</em></figcaption>
+    </figure>
   </div>
 </section>
 
@@ -148,7 +231,7 @@
     <div class="cta">
       <h2 style="margin-top:0">Run it in your browser</h2>
       <p>Upload audio + a transcript (<code>.phn</code> / <code>.wrd</code> / <code>.txt</code>), or click a built-in example, and get a boundary table, a Praat <code>.TextGrid</code>, and the time-aligned visualization.</p>
-      <a class="btn primary" href="https://huggingface.co/spaces/MLSpeech/FALCON">▶ Open the live demo</a>
+      <a class="btn primary" href="https://huggingface.co/spaces/MLSpeech/FALCON">Open the live demo</a>
       <div class="shots">
         <a href="https://huggingface.co/spaces/MLSpeech/FALCON"><img src="https://raw.githubusercontent.com/MLSpeech/FALCON/main/assets/app_screen.jpeg" alt="Demo — boundary tables and downloadable TextGrid"></a>
         <a href="https://huggingface.co/spaces/MLSpeech/FALCON"><img src="https://raw.githubusercontent.com/MLSpeech/FALCON/main/assets/app_screen2.jpeg" alt="Demo — time-aligned visualizations"></a>
@@ -215,9 +298,9 @@
     draw(); text(); requestAnimationFrame(frame);
   }
   playBtn.onclick=()=>{ aud.paused?aud.play():aud.pause(); };
-  aud.onplay=()=>{ playBtn.textContent='❚❚ Pause'; };
-  aud.onpause=()=>{ playBtn.textContent='▶ Play with sound'; vt=aud.currentTime||0; last=null; };
-  aud.onended=()=>{ playBtn.textContent='▶ Play with sound'; vt=0; last=null; };
+  aud.onplay=()=>{ playBtn.textContent='Pause'; };
+  aud.onpause=()=>{ playBtn.textContent='Play with sound'; vt=aud.currentTime||0; last=null; };
+  aud.onended=()=>{ playBtn.textContent='Play with sound'; vt=0; last=null; };
   cv.onclick=(e)=>{ const r=cv.getBoundingClientRect(), t=Math.min(D.duration,Math.max(0,(e.clientX-r.left)/r.width*D.duration));
     if(aud.paused){ vt=t; } else { aud.currentTime=t; } };
   aud.addEventListener('loadedmetadata',()=>{ if(aud.duration&&isFinite(aud.duration)) D.duration=aud.duration; resize(); });
