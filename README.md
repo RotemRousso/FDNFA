@@ -6,7 +6,8 @@
 
 > Rotem Rousso, Eyal Cohen, Joseph Keshet  
 > *"Fully Differentiable Neural Forced Alignment via Soft Dynamic Programming"*  
-> Preprint, 2026 — [arXiv:2606.25460](https://arxiv.org/abs/2606.25460)
+> Preprint, 2026 — [arXiv:2606.25460](https://arxiv.org/abs/2606.25460)  
+> Project page: [mlspeech.github.io/FALCON](https://mlspeech.github.io/FALCON/)
 
 ---
 
@@ -103,6 +104,69 @@ python generate_textgrids.py --wav assets/fasw0sa2.wav --mode phoneme --lang eng
 # the multi-panel "under the hood" figure
 python falcon_viz.py
 ```
+
+---
+
+## Results
+
+Numbers are from the paper ([arXiv:2606.25460](https://arxiv.org/abs/2606.25460)). **Specialist** = trained on the
+target English corpus; **joint** = a single model jointly trained on TIMIT+Buckeye.
+Multilingual results are **zero-shot** — no target-language training data. Accuracy
+is the percentage of reference boundaries matched within the given ms tolerance.
+
+**Phone-level alignment accuracy [%] — English (MFA vs. FALCON)**
+
+| Dataset | Model | t≤10 | t≤25 | t≤50 | t≤100 |
+|---|---|---|---|---|---|
+| TIMIT | MFA | **38.6** | 72.3 | 81.1 | 84.6 |
+| TIMIT | FALCON specialist | 37.66 | **83.88** | **94.85** | **98.62** |
+| TIMIT | FALCON joint | 34.70 | 82.62 | 94.91 | 98.60 |
+| Buckeye | MFA | **35.3** | 60.6 | 68.9 | 72.7 |
+| Buckeye | FALCON specialist | 29.69 | **69.93** | **90.07** | **97.40** |
+| Buckeye | FALCON joint | 28.87 | 69.40 | 89.53 | 97.13 |
+
+**Phoneme-level — unseen multilingual generalization (zero-shot) [%]**
+
+| Test set | Model | ≤10 | ≤15 | ≤20 | ≤25 | ≤50 | ≤100 |
+|---|---|---|---|---|---|---|---|
+| Dutch — IFA | **FALCON joint** | **26.85** | **36.16** | **44.56** | **51.17** | **69.94** | **84.11** |
+| Dutch — IFA | FALCON specialist | 26.86 | 35.79 | 43.85 | 50.34 | 68.68 | 83.22 |
+| Dutch — IFA | MFA | 11.01 | 14.70 | 19.05 | 21.80 | 33.90 | 51.02 |
+| German — PHONDAT | **FALCON joint** | **25.63** | **34.12** | **41.87** | **49.07** | **70.04** | **84.58** |
+| German — PHONDAT | FALCON specialist | 25.08 | 33.37 | 40.76 | 47.43 | 68.27 | 82.44 |
+| German — PHONDAT | MFA | 20.60 | 31.75 | 37.17 | 45.83 | 66.78 | 79.19 |
+| Hebrew | **FALCON joint** | **21.98** | **30.10** | **36.91** | **42.78** | **63.07** | **80.41** |
+| Hebrew | FALCON specialist | 21.03 | 27.78 | 34.30 | 39.79 | 59.38 | 77.76 |
+
+**Word-level alignment accuracy [%] — English**
+
+| Dataset | Model | t≤10 | t≤25 | t≤50 | t≤100 |
+|---|---|---|---|---|---|
+| TIMIT | FALCON spec (MFA-G2P) | 49.22 | **81.79** | **93.04** | 98.37 |
+| TIMIT | FALCON joint (MFA-G2P) | **49.50** | 80.60 | 92.86 | **98.46** |
+| TIMIT | MFA | 41.60 | 72.80 | 89.40 | 97.40 |
+| TIMIT | MMS | 18.60 | 43.50 | 75.70 | 94.70 |
+| TIMIT | WhisperX | 22.40 | 52.70 | 82.40 | 94.20 |
+| TIMIT | Nvidia-Canary-1b | 9.23 | 23.11 | 44.23 | 72.81 |
+| Buckeye | FALCON spec (MFA-G2P) | 50.06 | 77.85 | **91.51** | **96.63** |
+| Buckeye | FALCON joint (MFA-G2P) | **50.42** | **77.98** | 91.01 | 96.55 |
+| Buckeye | MFA | 39.80 | 69.90 | 84.90 | 91.80 |
+| Buckeye | MMS | 25.00 | 52.70 | 75.00 | 87.90 |
+| Buckeye | WhisperX | 18.80 | 43.10 | 67.40 | 77.40 |
+| Buckeye | Nvidia-Canary-1b | 8.06 | 18.83 | 36.31 | 63.29 |
+
+**Word-level — unseen multilingual generalization (zero-shot) [%]**
+
+| Dataset | Model | t≤10 | t≤25 | t≤50 | t≤100 |
+|---|---|---|---|---|---|
+| German — PHONDAT | FALCON (MFA-G2P) | **44.20** | **68.48** | **86.12** | **95.11** |
+| German — PHONDAT | MFA | 29.9 | 65.4 | 82.1 | 94.3 |
+| German — PHONDAT | MMS | 21.8 | 44.3 | 74.9 | 91.8 |
+| Dutch — IFA | FALCON (MFA-G2P) | **26.38** | **45.15** | 61.16 | 76.49 |
+| Dutch — IFA | MFA | 4.7 | 7.3 | 11.6 | 19.0 |
+| Dutch — IFA | MMS | 16.0 | 37.9 | **62.9** | **76.6** |
+| Hebrew | FALCON | **31.91** | **56.72** | 75.18 | 87.89 |
+| Hebrew | MMS | 14.3 | 41.3 | **76.5** | **94.7** |
 
 ---
 
@@ -429,87 +493,6 @@ FALCON/
 ├── assets/                          # README screenshots & example figures
 ├── requirements.txt
 ```
-
----
-
-## Results
-
-Numbers are from the paper (arXiv:2606.25460). **Specialist** = trained on the
-target English corpus; **joint** = a single model jointly trained on TIMIT+Buckeye.
-Multilingual results are **zero-shot** — no target-language training data. Accuracy
-is the percentage of reference boundaries matched within the given ms tolerance.
-
-**Phone-level alignment accuracy [%] — English (MFA vs. FALCON)**
-
-| Dataset | Model | t≤10 | t≤25 | t≤50 | t≤100 |
-|---|---|---|---|---|---|
-| TIMIT | MFA | **38.6** | 72.3 | 81.1 | 84.6 |
-| TIMIT | FALCON specialist | 37.66 | **83.88** | **94.85** | **98.62** |
-| TIMIT | FALCON joint | 34.70 | 82.62 | 94.91 | 98.60 |
-| Buckeye | MFA | **35.3** | 60.6 | 68.9 | 72.7 |
-| Buckeye | FALCON specialist | 29.69 | **69.93** | **90.07** | **97.40** |
-| Buckeye | FALCON joint | 28.87 | 69.40 | 89.53 | 97.13 |
-
-**Phoneme-level — unseen multilingual generalization (zero-shot) [%]**
-
-| Test set | Model | ≤10 | ≤15 | ≤20 | ≤25 | ≤50 | ≤100 |
-|---|---|---|---|---|---|---|---|
-| Dutch — IFA | **FALCON joint** | **26.85** | **36.16** | **44.56** | **51.17** | **69.94** | **84.11** |
-| Dutch — IFA | FALCON specialist | 26.86 | 35.79 | 43.85 | 50.34 | 68.68 | 83.22 |
-| Dutch — IFA | MFA | 11.01 | 14.70 | 19.05 | 21.80 | 33.90 | 51.02 |
-| German — PHONDAT | **FALCON joint** | **25.63** | **34.12** | **41.87** | **49.07** | **70.04** | **84.58** |
-| German — PHONDAT | FALCON specialist | 25.08 | 33.37 | 40.76 | 47.43 | 68.27 | 82.44 |
-| German — PHONDAT | MFA | 20.60 | 31.75 | 37.17 | 45.83 | 66.78 | 79.19 |
-| Hebrew | **FALCON joint** | **21.98** | **30.10** | **36.91** | **42.78** | **63.07** | **80.41** |
-| Hebrew | FALCON specialist | 21.03 | 27.78 | 34.30 | 39.79 | 59.38 | 77.76 |
-
-**Word-level alignment accuracy [%] — English**
-
-| Dataset | Model | t≤10 | t≤25 | t≤50 | t≤100 |
-|---|---|---|---|---|---|
-| TIMIT | FALCON spec (MFA-G2P) | 49.22 | **81.79** | **93.04** | 98.37 |
-| TIMIT | FALCON joint (MFA-G2P) | **49.50** | 80.60 | 92.86 | **98.46** |
-| TIMIT | MFA | 41.60 | 72.80 | 89.40 | 97.40 |
-| TIMIT | MMS | 18.60 | 43.50 | 75.70 | 94.70 |
-| TIMIT | WhisperX | 22.40 | 52.70 | 82.40 | 94.20 |
-| TIMIT | Nvidia-Canary-1b | 9.23 | 23.11 | 44.23 | 72.81 |
-| Buckeye | FALCON spec (MFA-G2P) | 50.06 | 77.85 | **91.51** | **96.63** |
-| Buckeye | FALCON joint (MFA-G2P) | **50.42** | **77.98** | 91.01 | 96.55 |
-| Buckeye | MFA | 39.80 | 69.90 | 84.90 | 91.80 |
-| Buckeye | MMS | 25.00 | 52.70 | 75.00 | 87.90 |
-| Buckeye | WhisperX | 18.80 | 43.10 | 67.40 | 77.40 |
-| Buckeye | Nvidia-Canary-1b | 8.06 | 18.83 | 36.31 | 63.29 |
-
-**Word-level — unseen multilingual generalization (zero-shot) [%]**
-
-| Dataset | Model | t≤10 | t≤25 | t≤50 | t≤100 |
-|---|---|---|---|---|---|
-| German — PHONDAT | FALCON (MFA-G2P) | **44.20** | **68.48** | **86.12** | **95.11** |
-| German — PHONDAT | MFA | 29.9 | 65.4 | 82.1 | 94.3 |
-| German — PHONDAT | MMS | 21.8 | 44.3 | 74.9 | 91.8 |
-| Dutch — IFA | FALCON (MFA-G2P) | **26.38** | **45.15** | 61.16 | 76.49 |
-| Dutch — IFA | MFA | 4.7 | 7.3 | 11.6 | 19.0 |
-| Dutch — IFA | MMS | 16.0 | 37.9 | **62.9** | **76.6** |
-| Hebrew | FALCON | **31.91** | **56.72** | 75.18 | 87.89 |
-| Hebrew | MMS | 14.3 | 41.3 | **76.5** | **94.7** |
-
----
-
-## Example Alignment
-
-The panel below is the demo's own output — waveform · log-mel spectrogram ·
-phoneme posteriors · Soft-DP cost matrix with the optimal path · contrastive
-boundary score — on a real TIMIT test utterance. The bundled input is
-`assets/fasw0sa2.*`, so you can drop it straight into the web demo or the CLI.
-
-**English — TIMIT** (read speech, phoneme-level)
-
-![English example](assets/example_english.png)
-
-*"Don't ask me to carry an oily rag like that." — 91% of boundaries within 25 ms on this utterance.*
-
-> Example audio is bundled for demonstration only and remains subject to its
-> source corpus's original license — see [`assets/examples/NOTICE`](assets/examples/NOTICE).
 
 ---
 
